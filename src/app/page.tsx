@@ -132,14 +132,14 @@ export default function Home() {
       <header className="w-full border-b border-astral-roseGold/15 bg-surface-50/40 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-astral-champagne via-astral-roseGold to-astral-mauve flex items-center justify-center text-slate-950 font-serif font-bold text-xl shadow-lg shadow-astral-roseGold/20">
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-astral-cyan via-astral-azure to-astral-sapphire flex items-center justify-center text-slate-950 font-serif font-bold text-xl shadow-lg shadow-astral-cyan/25">
               ✦
             </div>
             <div>
               <span className="font-serif tracking-widest text-xl text-white font-normal block">
                 ASTRAL
               </span>
-              <span className="text-[10px] text-astral-roseGold font-mono block -mt-1 tracking-widest uppercase">
+              <span className="text-[10px] text-astral-cyan font-mono block -mt-1 tracking-widest uppercase">
                 Alquimia Vincular de Almas
               </span>
             </div>
@@ -149,7 +149,7 @@ export default function Home() {
             <button
               onClick={handleLoadCelebrityDemo}
               disabled={isLoading}
-              className="text-xs px-4 py-2 rounded-xl bg-surface-100/60 hover:bg-surface-200/80 text-astral-champagne border border-astral-champagne/30 transition flex items-center gap-1.5 shadow-sm backdrop-blur-md"
+              className="text-xs px-4 py-2 rounded-xl bg-surface-100/60 hover:bg-surface-200/80 text-astral-cyan border border-astral-cyan/30 transition flex items-center gap-1.5 shadow-sm backdrop-blur-md"
             >
               <span>✦</span> Ver Ejemplo en Vivo (Frida & Diego)
             </button>
@@ -185,11 +185,11 @@ export default function Home() {
           <div className="space-y-16">
             {/* HERO SECTION DE LUJO FEMENINO */}
             <div className="text-center max-w-3xl mx-auto space-y-5 pt-2">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-100/80 border border-astral-roseGold/30 text-xs font-serif text-astral-champagne shadow-md backdrop-blur-md">
-                <span className="text-astral-roseGold">✦</span> Astrología Computacional de Precisión & Amor Consciente
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-100/80 border border-astral-cyan/30 text-xs font-serif text-astral-cyan shadow-md backdrop-blur-md">
+                <span className="text-astral-cyan">✦</span> Astrología Computacional de Precisión & Amor Consciente
               </div>
               <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif text-white tracking-tight leading-tight font-normal">
-                Comprende la Danza Invisible entre <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-astral-champagne via-astral-roseGold to-astral-mauve">sus Dos Almas</span>
+                Comprende la Danza Invisible entre <span className="italic text-transparent bg-clip-text bg-gradient-to-r from-sky-200 via-sky-400 to-indigo-400">sus Dos Almas</span>
               </h1>
               <p className="text-sm sm:text-base text-slate-300 font-light max-w-2xl mx-auto leading-relaxed">
                 Descubre su química erótica, la raíz de sus roces, cómo comunicarse sin herirse y el propósito sagrado de su unión. Cálculos astronómicos deterministas interpretados con la finura de la psicología arquetípica.
@@ -224,7 +224,7 @@ export default function Home() {
                       onClick={() => setPreviewTab(tab.id as any)}
                       className={`text-xs px-3.5 py-1.5 rounded-xl border transition ${
                         previewTab === tab.id
-                          ? 'bg-gradient-to-r from-astral-champagne to-astral-roseGold text-slate-950 border-transparent font-serif shadow-md'
+                          ? 'bg-gradient-to-r from-astral-cyan to-astral-azure text-slate-950 border-transparent font-serif shadow-md'
                           : 'bg-surface-100 text-slate-300 hover:text-white border-white/5'
                       }`}
                     >

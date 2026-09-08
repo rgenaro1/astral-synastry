@@ -10,25 +10,30 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "#0C0A10", // Terciopelo obsidiana cálido
+        background: "#040814", // Noche azul zafiro cósmica
         surface: {
-          50: "#16121F",
-          100: "#1E182A",
-          200: "#272036",
-          300: "#342B46",
-          400: "#44395A",
+          50: "#0B1528",  // Midnight blue zafiro
+          100: "#101D38", // Azul marino cósmico
+          200: "#16284D", // Índigo azul profundo
+          300: "#1E3566", // Azul estelar intermedio
+          400: "#2B4985", // Azul celeste suave
         },
         astral: {
-          champagne: "#F3E7C4",
-          champagneDark: "#CBB37C",
-          gold: "#D8B26E",
-          roseGold: "#E8B4B8",
-          blush: "#F9E4E8",
-          mauve: "#C49BB5",
-          lavender: "#D6BFE8",
-          plum: "#4A3353",
-          coral: "#F28C8C",
-          teal: "#73BBA3",
+          cyan: "#38BDF8", // Cyan glacial estelar
+          azure: "#60A5FA", // Azul zafiro luminoso
+          ice: "#E0F2FE", // Blanco glacial
+          silver: "#E2E8F0", // Plata estelar
+          sapphire: "#2563EB", // Zafiro real profundo
+          champagne: "#BAE6FD", // Azul diamante estelar
+          champagneDark: "#60A5FA",
+          gold: "#38BDF8", // Cyan estelar brillante
+          roseGold: "#38BDF8", // Cyan celestial radiante (mapea todos los acentos editoriales a azul)
+          blush: "#E0F2FE", // Brillo blanco glacial
+          mauve: "#818CF8", // Índigo etéreo
+          lavender: "#A5B4FC", // Lavanda azulada
+          plum: "#1E293B", // Azul pizarra profundo
+          coral: "#F87171", // Coral cósmico para aspectos desafiantes
+          teal: "#2DD4BF", // Turquesa celestial
         },
       },
       fontFamily: {
@@ -37,8 +42,8 @@ const config: Config = {
       },
       backgroundImage: {
         "gradient-radial": "radial-gradient(var(--tw-gradient-stops))",
-        "feminine-glow": "radial-gradient(circle at 50% 0%, rgba(232, 180, 184, 0.12) 0%, rgba(12, 10, 16, 0) 70%)",
-        "velvet-card": "linear-gradient(180deg, rgba(30, 24, 42, 0.75) 0%, rgba(22, 18, 31, 0.75) 100%)",
+        "feminine-glow": "radial-gradient(circle at 50% 0%, rgba(56, 189, 248, 0.15) 0%, rgba(4, 8, 20, 0) 70%)",
+        "velvet-card": "linear-gradient(180deg, rgba(16, 29, 56, 0.75) 0%, rgba(11, 21, 40, 0.75) 100%)",
       },
       animation: {
         "pulse-slow": "pulse 5s cubic-bezier(0.4, 0, 0.6, 1) infinite",

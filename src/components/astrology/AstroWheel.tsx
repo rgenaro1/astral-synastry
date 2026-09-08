@@ -98,10 +98,10 @@ export const AstroWheel: React.FC<AstroWheelProps> = ({
   }, [chart.aspects, selectedPlanet]);
 
   const getAspectColor = (nature: string, type: string) => {
-    if (type === 'conjunction') return '#F3E7C4'; // Champagne dorado luminoso
-    if (nature === 'harmonious') return '#99D6EA'; // Cyan suave celestial
-    if (nature === 'challenging') return '#F28C8C'; // Coral/Rosa intenso
-    return '#E8B4B8'; // Rose Gold
+    if (type === 'conjunction') return '#BAE6FD'; // Blanco diamante / hielo estelar
+    if (nature === 'harmonious') return '#38BDF8'; // Cyan celestial radiante
+    if (nature === 'challenging') return '#F87171'; // Coral / rubí para aspectos desafiantes
+    return '#818CF8'; // Índigo místico
   };
 
   const planetDetail = useMemo(() => {
@@ -119,14 +119,14 @@ export const AstroWheel: React.FC<AstroWheelProps> = ({
   return (
     <div className="relative flex flex-col items-center bg-gradient-to-b from-surface-100/90 via-surface-50/80 to-surface-100/90 backdrop-blur-2xl rounded-3xl border border-astral-roseGold/25 p-4 sm:p-7 shadow-[0_15px_50px_rgba(0,0,0,0.6)] overflow-hidden w-full">
       {/* Resplandor áurico */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-astral-roseGold/8 rounded-full blur-3xl pointer-events-none"></div>
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] bg-astral-cyan/8 rounded-full blur-3xl pointer-events-none"></div>
 
       {/* CABECERA & CONTROLES */}
       <div className="w-full flex flex-wrap justify-between items-center gap-3 mb-2 z-10">
         <div>
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-astral-roseGold animate-pulse"></span>
-            <span className="text-[11px] uppercase tracking-widest text-astral-roseGold font-mono font-semibold">
+            <span className="w-2 h-2 rounded-full bg-astral-cyan animate-pulse"></span>
+            <span className="text-[11px] uppercase tracking-widest text-astral-cyan font-mono font-semibold">
               Rueda Astrológica Viva
             </span>
           </div>
@@ -138,56 +138,45 @@ export const AstroWheel: React.FC<AstroWheelProps> = ({
         <div className="flex items-center gap-2">
           {secondChart && (
             <div className="hidden sm:flex items-center gap-3 text-xs font-mono mr-2 bg-surface-200/60 px-3 py-1.5 rounded-xl border border-white/5">
-              <span className="flex items-center gap-1.5 text-astral-champagne">
-                <span className="w-2.5 h-2.5 rounded-full bg-astral-roseGold/80"></span>
-                {chart.profile.name} (Interior)
-              </span>
-              <span className="text-white/20">|</span>
-              <span className="flex items-center gap-1.5 text-slate-300">
-                <span className="w-2.5 h-2.5 rounded-full bg-astral-lavender/80"></span>
-                {secondChart.profile.name} (Exterior)
-              </span>
+              <span className="text-astral-cyan">● {chart.profile.name} (Interior)</span>
+              <span className="text-astral-azure">● {secondChart.profile.name} (Exterior)</span>
             </div>
           )}
 
-          {/* Zoom controls */}
-          <div className="flex items-center bg-surface-200/80 rounded-xl p-1 border border-white/5 shadow-inner">
+          {/* Botones de zoom */}
+          <div className="flex items-center gap-1 bg-surface-200/60 border border-white/5 p-1 rounded-xl">
             <button
-              onClick={() => setZoomLevel((z) => Math.max(0.8, z - 0.1))}
-              className="w-7 h-7 flex items-center justify-center text-xs text-slate-300 hover:text-white rounded-lg hover:bg-white/10 transition"
-              title="Reducir"
+              onClick={() => setZoomLevel((prev) => Math.max(0.85, prev - 0.1))}
+              className="px-2 py-1 text-xs text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition"
+              title="Alejar"
             >
-              -
+              −
             </button>
-            <span className="text-[11px] text-astral-champagne font-mono px-2">
+            <span className="text-[11px] text-slate-400 font-mono px-1">
               {Math.round(zoomLevel * 100)}%
             </span>
             <button
-              onClick={() => setZoomLevel((z) => Math.min(1.4, z + 0.1))}
-              className="w-7 h-7 flex items-center justify-center text-xs text-slate-300 hover:text-white rounded-lg hover:bg-white/10 transition"
-              title="Ampliar"
+              onClick={() => setZoomLevel((prev) => Math.min(1.4, prev + 0.1))}
+              className="px-2 py-1 text-xs text-slate-300 hover:text-white hover:bg-white/10 rounded-lg transition"
+              title="Acercar"
             >
               +
             </button>
             <button
-              onClick={() => {
-                setZoomLevel(1);
-                setSelectedPlanet(null);
-                setSelectedHouse(null);
-                setHoveredAspect(null);
-              }}
-              className="text-[11px] px-2.5 py-1 text-slate-400 hover:text-astral-roseGold rounded-lg hover:bg-white/5 transition"
+              onClick={() => setZoomLevel(1)}
+              className="px-2 py-1 text-[11px] text-astral-cyan hover:bg-white/10 rounded-lg transition"
+              title="Restablecer"
             >
-              Reset
+              ↺
             </button>
           </div>
         </div>
       </div>
 
-      <div className="w-full flex items-center justify-between text-[11px] text-slate-400 font-light italic mb-2 border-b border-white/5 pb-2">
-        <span>✦ Haz clic en un planeta o aspecto para abrir sus secretos y consejos de armonía.</span>
+      <div className="text-xs text-slate-400 font-light mb-3 italic self-start flex items-center gap-1.5">
+        <span>✦</span> Toca cualquier planeta para desplegar su sabiduría e influencia en el vínculo.
         {selectedPlanet && (
-          <span className="text-astral-roseGold font-mono not-italic">
+          <span className="text-astral-cyan font-mono not-italic">
             Seleccionado: {selectedPlanet.name} ({selectedPlanet.sign})
           </span>
         )}
@@ -208,16 +197,16 @@ export const AstroWheel: React.FC<AstroWheelProps> = ({
             </filter>
 
             <radialGradient id="feminineWheelBg" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#100C18" stopOpacity="0.97" />
-              <stop offset="65%" stopColor="#171124" stopOpacity="0.98" />
-              <stop offset="100%" stopColor="#251B35" stopOpacity="1" />
+              <stop offset="0%" stopColor="#060C1B" stopOpacity="0.97" />
+              <stop offset="65%" stopColor="#0A162F" stopOpacity="0.98" />
+              <stop offset="100%" stopColor="#102246" stopOpacity="1" />
             </radialGradient>
 
             <linearGradient id="roseGoldBorder" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#F3E7C4" stopOpacity="0.9" />
-              <stop offset="35%" stopColor="#E8B4B8" stopOpacity="0.8" />
-              <stop offset="70%" stopColor="#D8B26E" stopOpacity="0.6" />
-              <stop offset="100%" stopColor="#C49BB5" stopOpacity="0.8" />
+              <stop offset="0%" stopColor="#BAE6FD" stopOpacity="0.9" />
+              <stop offset="35%" stopColor="#38BDF8" stopOpacity="0.8" />
+              <stop offset="70%" stopColor="#60A5FA" stopOpacity="0.7" />
+              <stop offset="100%" stopColor="#818CF8" stopOpacity="0.8" />
             </linearGradient>
           </defs>
 
@@ -247,7 +236,7 @@ export const AstroWheel: React.FC<AstroWheelProps> = ({
                 y1={p1.y}
                 x2={p2.x}
                 y2={p2.y}
-                stroke={isMajor ? 'rgba(243, 231, 196, 0.5)' : 'rgba(232, 180, 184, 0.2)'}
+                stroke={isMajor ? 'rgba(186, 230, 253, 0.6)' : 'rgba(56, 189, 248, 0.25)'}
                 strokeWidth={isMajor ? 1.2 : 0.6}
               />
             );
@@ -266,12 +255,12 @@ export const AstroWheel: React.FC<AstroWheelProps> = ({
             const isWater = sign.element === 'Agua';
 
             const signColor = isFire
-              ? '#F3E7C4' // Fuego = Champagne dorado
+              ? '#FBBF24' // Fuego = Ámbar estelar
               : isAir
-              ? '#D8B26E' // Aire = Oro cálido
+              ? '#BAE6FD' // Aire = Hielo celeste
               : isWater
-              ? '#E8B4B8' // Agua = Rose gold
-              : '#C49BB5'; // Tierra = Mauve suave
+              ? '#38BDF8' // Agua = Cyan zafiro
+              : '#818CF8'; // Tierra = Índigo cósmico
 
             return (
               <g key={sign.name} className="cursor-default">
@@ -307,7 +296,7 @@ export const AstroWheel: React.FC<AstroWheelProps> = ({
             cy={center}
             r={radius - signRingWidth}
             fill="none"
-            stroke="rgba(232, 180, 184, 0.25)"
+            stroke="rgba(56, 189, 248, 0.25)"
             strokeWidth="1.2"
           />
 
@@ -350,34 +339,27 @@ export const AstroWheel: React.FC<AstroWheelProps> = ({
                   y2={inner.y}
                   stroke={
                     isAsc
-                      ? '#F3E7C4' // Ascendente
+                      ? '#BAE6FD' // Ascendente en azul glacial
                       : isMc
-                      ? '#E8B4B8' // Medio Cielo
+                      ? '#38BDF8' // Medio Cielo en cyan celestial
                       : isCardinal
-                      ? 'rgba(243, 231, 196, 0.45)'
+                      ? 'rgba(186, 230, 253, 0.5)'
                       : 'rgba(255, 255, 255, 0.12)'
                   }
                   strokeWidth={isCardinal ? 2 : 0.8}
                   strokeDasharray={isCardinal ? '' : '3 3'}
-                  className="transition-all group-hover:stroke-astral-roseGold"
                 />
-                <circle
-                  cx={numPos.x}
-                  cy={numPos.y}
-                  r={isHouseSelected ? 10 : 8}
-                  fill={isHouseSelected ? 'rgba(232, 180, 184, 0.35)' : 'rgba(20, 16, 28, 0.5)'}
-                  stroke={isHouseSelected ? '#E8B4B8' : 'transparent'}
-                  strokeWidth="1"
-                  className="transition-all"
-                />
+
+                {/* Número de casa con halo */}
                 <text
                   x={numPos.x}
                   y={numPos.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fontSize="10"
-                  fill={isHouseSelected ? '#FFFFFF' : 'rgba(243, 231, 196, 0.7)'}
-                  className="font-serif select-none font-medium transition-colors group-hover:fill-white"
+                  fontSize="11"
+                  fill={isCardinal ? '#BAE6FD' : 'rgba(255, 255, 255, 0.45)'}
+                  className="font-mono select-none"
+                  fontWeight={isCardinal ? 'bold' : 'normal'}
                 >
                   {house.house}
                 </text>
@@ -390,9 +372,9 @@ export const AstroWheel: React.FC<AstroWheelProps> = ({
             cx={center}
             cy={center}
             r={130}
-            fill="#0C0A10"
+            fill="#040814"
             fillOpacity="0.94"
-            stroke="rgba(232, 180, 184, 0.2)"
+            stroke="rgba(56, 189, 248, 0.25)"
             strokeWidth="1.2"
           />
 

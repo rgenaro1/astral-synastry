@@ -3,8 +3,8 @@
 @tailwind utilities;
 
 :root {
-  --background: #0C0A10;
-  --foreground: #FAF7F5;
+  --background: #040814;
+  --foreground: #F0F6FC;
 }
 
 body {
@@ -12,9 +12,9 @@ body {
   color: var(--foreground);
   font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
   background-image: 
-    radial-gradient(circle at 50% -10%, rgba(232, 180, 184, 0.1) 0%, transparent 65%),
-    radial-gradient(circle at 100% 100%, rgba(216, 178, 110, 0.06) 0%, transparent 50%),
-    radial-gradient(circle at 0% 50%, rgba(196, 155, 181, 0.05) 0%, transparent 50%);
+    radial-gradient(circle at 50% -10%, rgba(56, 189, 248, 0.14) 0%, transparent 65%),
+    radial-gradient(circle at 100% 100%, rgba(37, 99, 235, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 0% 50%, rgba(129, 140, 248, 0.08) 0%, transparent 50%);
   background-attachment: fixed;
   min-height: 100vh;
 }
@@ -43,8 +43,8 @@ body {
   animation: fadeIn 0.45s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-/* Selección elegante */
+/* Selección elegante en azul celestial */
 ::selection {
-  background-color: rgba(232, 180, 184, 0.3);
-  color: #FAF7F5;
+  background-color: rgba(56, 189, 248, 0.35);
+  color: #F0F6FC;
 }

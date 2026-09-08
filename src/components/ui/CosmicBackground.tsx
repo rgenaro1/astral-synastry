@@ -41,15 +41,15 @@ export const CosmicBackground: React.FC = () => {
     let offscreenCanvas: HTMLCanvasElement | null = null;
     let stars: Star[] = [];
 
-    // Colores espectrales de estrellas de telescopio
+    // Colores espectrales de estrellas de telescopio en tonos azules y plata
     const starColors = [
-      '255, 255, 255', // Blanco espectral A
-      '246, 236, 218', // Blanco cálido / Champagne
-      '235, 185, 195', // Rosa H-Alfa estelar
-      '195, 220, 255', // Azul caliente clase B/O
-      '255, 225, 165', // Gigante amarilla clase G
-      '255, 190, 160', // Gigante roja clase M
-      '225, 200, 250', // Violeta nebular
+      '255, 255, 255', // Blanco diamante puro
+      '220, 240, 255', // Blanco glacial / Hielo estelar
+      '186, 230, 253', // Cyan suave celestial
+      '147, 197, 253', // Azul caliente clase B / O
+      '96, 165, 250',  // Azul zafiro luminoso
+      '226, 232, 240', // Plata estelar pura
+      '199, 210, 254', // Índigo celeste
     ];
 
     // Generar la composición de telescopio en alta montaña
@@ -60,16 +60,16 @@ export const CosmicBackground: React.FC = () => {
       const bCtx = offscreenCanvas.getContext('2d');
       if (!bCtx) return;
 
-      // 1. Cielo nocturno de alta montaña (Cielo clase Bortle 1 - negro índigo profundo)
+      // 1. Cielo nocturno de alta montaña (Cielo clase Bortle 1 - negro azul zafiro ultra profundo)
       const skyGrad = bCtx.createLinearGradient(0, 0, 0, height);
-      skyGrad.addColorStop(0, '#040207');
-      skyGrad.addColorStop(0.4, '#07050E');
-      skyGrad.addColorStop(0.75, '#0B0816');
-      skyGrad.addColorStop(1, '#110D1F');
+      skyGrad.addColorStop(0, '#02040A');
+      skyGrad.addColorStop(0.35, '#04091A');
+      skyGrad.addColorStop(0.7, '#071330');
+      skyGrad.addColorStop(1, '#0B1B42');
       bCtx.fillStyle = skyGrad;
       bCtx.fillRect(0, 0, width, height);
 
-      // 2. BANDA DIAGONAL DE LA VÍA LÁCTEA (Inclinación típica de 35-40 grados)
+      // 2. BANDA DIAGONAL DE LA VÍA LÁCTEA (Inclinación de 32 grados en tonos azul zafiro y cian)
       bCtx.save();
       bCtx.translate(width * 0.45, height * 0.4);
       bCtx.rotate((-32 * Math.PI) / 180);
@@ -79,23 +79,23 @@ export const CosmicBackground: React.FC = () => {
       const bandHeight = height * 0.75;
 
       const milkyBand = bCtx.createLinearGradient(0, -bandHeight / 2, 0, bandHeight / 2);
-      milkyBand.addColorStop(0, 'rgba(15, 10, 30, 0)');
-      milkyBand.addColorStop(0.2, 'rgba(60, 35, 85, 0.15)');
-      milkyBand.addColorStop(0.4, 'rgba(180, 120, 150, 0.28)'); // Nube de polvo estelar H-Alfa
-      milkyBand.addColorStop(0.5, 'rgba(245, 210, 170, 0.42)'); // Núcleo estelar cálido
-      milkyBand.addColorStop(0.6, 'rgba(165, 100, 155, 0.26)');
-      milkyBand.addColorStop(0.8, 'rgba(45, 30, 75, 0.16)');
-      milkyBand.addColorStop(1, 'rgba(15, 10, 30, 0)');
+      milkyBand.addColorStop(0, 'rgba(4, 12, 35, 0)');
+      milkyBand.addColorStop(0.2, 'rgba(20, 60, 140, 0.22)');
+      milkyBand.addColorStop(0.4, 'rgba(56, 189, 248, 0.38)'); // Nube de polvo estelar azul cian celestial
+      milkyBand.addColorStop(0.5, 'rgba(215, 240, 255, 0.52)'); // Núcleo estelar blanco glacial luminoso
+      milkyBand.addColorStop(0.6, 'rgba(59, 130, 246, 0.35)'); // Zafiro radiante
+      milkyBand.addColorStop(0.8, 'rgba(30, 58, 138, 0.2)');
+      milkyBand.addColorStop(1, 'rgba(4, 12, 35, 0)');
 
       bCtx.fillStyle = milkyBand;
       bCtx.fillRect(-bandWidth / 2, -bandHeight / 2, bandWidth, bandHeight);
 
-      // NÚCLEO GALÁCTICO BRILLANTE (Centro en Sagitario / Escorpio)
+      // NÚCLEO GALÁCTICO BRILLANTE (Centro estelar blanco diamante y cian en Sagitario)
       const coreGrad = bCtx.createRadialGradient(0, 0, 10, 0, 0, width * 0.45);
-      coreGrad.addColorStop(0, 'rgba(255, 235, 195, 0.45)'); // Bulbo galáctico súper denso
-      coreGrad.addColorStop(0.25, 'rgba(235, 165, 185, 0.35)'); // Polvo de estrellas rosa/champán
-      coreGrad.addColorStop(0.5, 'rgba(145, 75, 145, 0.22)'); // Nebulosa púrpura
-      coreGrad.addColorStop(0.75, 'rgba(45, 35, 80, 0.12)'); // Halo de absorción
+      coreGrad.addColorStop(0, 'rgba(240, 249, 255, 0.6)'); // Bulbo galáctico súper denso blanco-cian
+      coreGrad.addColorStop(0.25, 'rgba(125, 211, 252, 0.45)'); // Polvo de estrellas cian glacial
+      coreGrad.addColorStop(0.5, 'rgba(37, 99, 235, 0.28)'); // Nebulosa zafiro
+      coreGrad.addColorStop(0.75, 'rgba(30, 27, 75, 0.16)'); // Halo de absorción índigo
       coreGrad.addColorStop(1, 'transparent');
 
       bCtx.fillStyle = coreGrad;
@@ -103,8 +103,8 @@ export const CosmicBackground: React.FC = () => {
       bCtx.ellipse(0, 0, width * 0.5, height * 0.3, 0, 0, Math.PI * 2);
       bCtx.fill();
 
-      // GRIETAS DE POLVO INTERESTELAR OSCURO (Great Rift / Dark River to Antares)
-      // Bloquean la luz de las estrellas de fondo creando el aspecto real de la Vía Láctea
+      // GRIETAS DE POLVO INTERESTELAR OSCURO (Great Rift / Dark River)
+      // Bloquean la luz estelar con absorción cósmica en azul petróleo profundo
       const darkRifts = [
         { x: -width * 0.2, y: -height * 0.05, rx: width * 0.25, ry: height * 0.08, rot: 0.1 },
         { x: width * 0.1, y: height * 0.04, rx: width * 0.3, ry: height * 0.09, rot: -0.15 },
@@ -113,8 +113,8 @@ export const CosmicBackground: React.FC = () => {
 
       for (const rift of darkRifts) {
         const rGrad = bCtx.createRadialGradient(rift.x, rift.y, 5, rift.x, rift.y, rift.rx);
-        rGrad.addColorStop(0, 'rgba(6, 4, 11, 0.55)');
-        rGrad.addColorStop(0.6, 'rgba(8, 6, 14, 0.35)');
+        rGrad.addColorStop(0, 'rgba(2, 5, 14, 0.65)');
+        rGrad.addColorStop(0.6, 'rgba(3, 8, 22, 0.42)');
         rGrad.addColorStop(1, 'transparent');
 
         bCtx.save();
@@ -129,9 +129,9 @@ export const CosmicBackground: React.FC = () => {
 
       bCtx.restore();
 
-      // 3. NEBULOSAS DE EMISIÓN DE COLOR VIVIDO (Laguna M8, Trífida, Carina, Rho Ophiuchi)
-      // Nebulosa H-Alfa magenta/rosada en el cuadrante superior
-      const nebHAlpha = bCtx.createRadialGradient(
+      // 3. NEBULOSAS DE REFLEXIÓN CIAN & ÍNDIGO (Tipo Pléyades y M78)
+      // Nebulosa cian eléctrico en el cuadrante superior
+      const nebCyanElectric = bCtx.createRadialGradient(
         width * 0.72,
         height * 0.22,
         0,
@@ -139,15 +139,15 @@ export const CosmicBackground: React.FC = () => {
         height * 0.22,
         width * 0.25
       );
-      nebHAlpha.addColorStop(0, 'rgba(235, 95, 145, 0.25)');
-      nebHAlpha.addColorStop(0.3, 'rgba(185, 70, 135, 0.18)');
-      nebHAlpha.addColorStop(0.6, 'rgba(100, 45, 120, 0.1)');
-      nebHAlpha.addColorStop(1, 'transparent');
-      bCtx.fillStyle = nebHAlpha;
+      nebCyanElectric.addColorStop(0, 'rgba(56, 189, 248, 0.32)');
+      nebCyanElectric.addColorStop(0.35, 'rgba(96, 165, 250, 0.22)');
+      nebCyanElectric.addColorStop(0.65, 'rgba(79, 70, 229, 0.12)');
+      nebCyanElectric.addColorStop(1, 'transparent');
+      bCtx.fillStyle = nebCyanElectric;
       bCtx.fillRect(0, 0, width, height);
 
-      // Nebulosa de reflexión cian/zafiro en el cuadrante inferior izquierdo
-      const nebCyan = bCtx.createRadialGradient(
+      // Nebulosa zafiro y turquesa en el cuadrante inferior izquierdo
+      const nebDeepAzure = bCtx.createRadialGradient(
         width * 0.18,
         height * 0.65,
         0,
@@ -155,22 +155,22 @@ export const CosmicBackground: React.FC = () => {
         height * 0.65,
         width * 0.22
       );
-      nebCyan.addColorStop(0, 'rgba(95, 175, 235, 0.18)');
-      nebCyan.addColorStop(0.4, 'rgba(130, 95, 200, 0.12)');
-      nebCyan.addColorStop(1, 'transparent');
-      bCtx.fillStyle = nebCyan;
+      nebDeepAzure.addColorStop(0, 'rgba(34, 211, 238, 0.26)');
+      nebDeepAzure.addColorStop(0.4, 'rgba(37, 99, 235, 0.18)');
+      nebDeepAzure.addColorStop(1, 'transparent');
+      bCtx.fillStyle = nebDeepAzure;
       bCtx.fillRect(0, 0, width, height);
 
-      // 4. GALAXIA DE ANDRÓMEDA ESPIRAL EN LA DISTANCIA (M31)
+      // 4. GALAXIA DE ANDRÓMEDA ESPIRAL EN LA DISTANCIA (M31 en azul glacial)
       bCtx.save();
       bCtx.translate(width * 0.82, height * 0.38);
       bCtx.rotate((-25 * Math.PI) / 180);
 
       // Disco exterior de la galaxia
       const m31Disk = bCtx.createRadialGradient(0, 0, 0, 0, 0, 75);
-      m31Disk.addColorStop(0, 'rgba(255, 245, 220, 0.55)');
-      m31Disk.addColorStop(0.25, 'rgba(215, 185, 235, 0.35)');
-      m31Disk.addColorStop(0.6, 'rgba(125, 95, 170, 0.18)');
+      m31Disk.addColorStop(0, 'rgba(224, 242, 254, 0.65)');
+      m31Disk.addColorStop(0.25, 'rgba(147, 197, 253, 0.42)');
+      m31Disk.addColorStop(0.6, 'rgba(59, 130, 246, 0.2)');
       m31Disk.addColorStop(1, 'transparent');
       bCtx.fillStyle = m31Disk;
       bCtx.beginPath();
@@ -179,8 +179,8 @@ export const CosmicBackground: React.FC = () => {
 
       // Núcleo supermasivo brillante
       const m31Core = bCtx.createRadialGradient(0, 0, 0, 0, 0, 14);
-      m31Core.addColorStop(0, 'rgba(255, 255, 255, 0.95)');
-      m31Core.addColorStop(0.5, 'rgba(255, 235, 190, 0.6)');
+      m31Core.addColorStop(0, 'rgba(255, 255, 255, 0.98)');
+      m31Core.addColorStop(0.5, 'rgba(186, 230, 253, 0.7)');
       m31Core.addColorStop(1, 'transparent');
       bCtx.fillStyle = m31Core;
       bCtx.beginPath();
@@ -188,7 +188,7 @@ export const CosmicBackground: React.FC = () => {
       bCtx.fill();
       bCtx.restore();
 
-      // 5. POLVO ESTELAR DENSO (1,500 micro-estrellas fijas en el lienzo estático)
+      // 5. POLVO ESTELAR DENSO (1,600 micro-estrellas celestes en el lienzo estático)
       const microStarCount = Math.min(1600, Math.floor((width * height) / 1000));
       for (let i = 0; i < microStarCount; i++) {
         // Gran concentración a lo largo de la franja de la Vía Láctea
@@ -203,7 +203,7 @@ export const CosmicBackground: React.FC = () => {
         }
 
         const sRadius = Math.random() * 0.65 + 0.25;
-        const sAlpha = Math.random() * 0.5 + 0.2;
+        const sAlpha = Math.random() * 0.52 + 0.2;
         const color = starColors[Math.floor(Math.random() * starColors.length)];
 
         bCtx.beginPath();
@@ -212,12 +212,12 @@ export const CosmicBackground: React.FC = () => {
         bCtx.fill();
       }
 
-      // 6. SILUETA DE MONTAÑA REALISTA EN EL HORIZONTE (Perspectiva de observatorio en cumbre)
-      // Resplandor crepuscular cósmico / Luz zodiacal sobre las cumbres
+      // 6. SILUETA DE MONTAÑA REALISTA EN EL HORIZONTE (Perspectiva de observatorio alpino)
+      // Resplandor crepuscular cósmico / Luz zodiacal azul zafiro sobre las cumbres
       const mountainGlow = bCtx.createLinearGradient(0, height * 0.78, 0, height);
       mountainGlow.addColorStop(0, 'transparent');
-      mountainGlow.addColorStop(0.5, 'rgba(155, 105, 145, 0.08)');
-      mountainGlow.addColorStop(1, 'rgba(30, 20, 45, 0.25)');
+      mountainGlow.addColorStop(0.5, 'rgba(56, 189, 248, 0.1)');
+      mountainGlow.addColorStop(1, 'rgba(15, 30, 65, 0.35)');
       bCtx.fillStyle = mountainGlow;
       bCtx.fillRect(0, height * 0.75, width, height * 0.25);
 
@@ -237,7 +237,7 @@ export const CosmicBackground: React.FC = () => {
       }
       bCtx.lineTo(width, height);
       bCtx.closePath();
-      bCtx.fillStyle = 'rgba(12, 8, 18, 0.65)';
+      bCtx.fillStyle = 'rgba(8, 16, 36, 0.75)';
       bCtx.fill();
 
       // Cresta de montaña cercana y afilada (capa 2 en primer plano)
@@ -254,11 +254,11 @@ export const CosmicBackground: React.FC = () => {
       }
       bCtx.lineTo(width, height);
       bCtx.closePath();
-      bCtx.fillStyle = 'rgba(7, 4, 11, 0.96)';
+      bCtx.fillStyle = 'rgba(3, 7, 18, 0.98)';
       bCtx.fill();
 
-      // Delicada línea de rim-light (luz estelar plateada reflejada en las crestas rocosas)
-      bCtx.strokeStyle = 'rgba(235, 180, 200, 0.18)';
+      // Delicada línea de rim-light (luz estelar cian plateada reflejada en las crestas rocosas)
+      bCtx.strokeStyle = 'rgba(186, 230, 253, 0.3)';
       bCtx.lineWidth = 1;
       bCtx.beginPath();
       for (let i = 0; i <= segs2; i++) {
@@ -269,7 +269,7 @@ export const CosmicBackground: React.FC = () => {
       }
       bCtx.stroke();
 
-      // 7. GENERAR ESTRELLAS DINÁMICAS (500 estrellas principales con centelleo y picos de telescopio)
+      // 7. GENERAR ESTRELLAS DINÁMICAS (600 estrellas principales con centelleo y picos de telescopio)
       const dynamicCount = Math.min(650, Math.floor((width * height) / 2200));
       stars = [];
 
@@ -423,9 +423,9 @@ export const CosmicBackground: React.FC = () => {
         const endY = shootingStar.y + Math.sin(shootingStar.angle) * shootingStar.length;
 
         const grad = ctx.createLinearGradient(shootingStar.x, shootingStar.y, endX, endY);
-        grad.addColorStop(0, `rgba(255, 255, 250, ${shootingStar.opacity})`);
-        grad.addColorStop(0.25, `rgba(245, 215, 175, ${shootingStar.opacity * 0.85})`);
-        grad.addColorStop(0.65, `rgba(235, 160, 185, ${shootingStar.opacity * 0.4})`);
+        grad.addColorStop(0, `rgba(255, 255, 255, ${shootingStar.opacity})`);
+        grad.addColorStop(0.25, `rgba(224, 242, 254, ${shootingStar.opacity * 0.9})`);
+        grad.addColorStop(0.65, `rgba(56, 189, 248, ${shootingStar.opacity * 0.4})`);
         grad.addColorStop(1, 'transparent');
 
         ctx.beginPath();

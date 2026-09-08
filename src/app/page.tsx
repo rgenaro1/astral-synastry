@@ -129,7 +129,7 @@ export default function Home() {
   return (
     <div className="flex-1 flex flex-col">
       {/* BARRA SUPERIOR EDITORIAL */}
-      <header className="w-full border-b border-astral-roseGold/15 bg-surface-50/70 backdrop-blur-2xl sticky top-0 z-40">
+      <header className="w-full border-b border-astral-roseGold/15 bg-surface-50/40 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
           <div className="flex items-center gap-3.5">
             <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-astral-champagne via-astral-roseGold to-astral-mauve flex items-center justify-center text-slate-950 font-serif font-bold text-xl shadow-lg shadow-astral-roseGold/20">
@@ -149,7 +149,7 @@ export default function Home() {
             <button
               onClick={handleLoadCelebrityDemo}
               disabled={isLoading}
-              className="text-xs px-4 py-2 rounded-xl bg-surface-100 hover:bg-surface-200 text-astral-champagne border border-astral-champagne/30 transition flex items-center gap-1.5 shadow-sm"
+              className="text-xs px-4 py-2 rounded-xl bg-surface-100/60 hover:bg-surface-200/80 text-astral-champagne border border-astral-champagne/30 transition flex items-center gap-1.5 shadow-sm backdrop-blur-md"
             >
               <span>✦</span> Ver Ejemplo en Vivo (Frida & Diego)
             </button>
@@ -185,7 +185,7 @@ export default function Home() {
           <div className="space-y-16">
             {/* HERO SECTION DE LUJO FEMENINO */}
             <div className="text-center max-w-3xl mx-auto space-y-5 pt-2">
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-100/90 border border-astral-roseGold/30 text-xs font-serif text-astral-champagne shadow-md backdrop-blur-md">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-100/80 border border-astral-roseGold/30 text-xs font-serif text-astral-champagne shadow-md backdrop-blur-md">
                 <span className="text-astral-roseGold">✦</span> Astrología Computacional de Precisión & Amor Consciente
               </div>
               <h1 className="text-3xl sm:text-5xl md:text-6xl font-serif text-white tracking-tight leading-tight font-normal">
@@ -197,7 +197,7 @@ export default function Home() {
             </div>
 
             {/* SECCIÓN DESTACADA: RUEDA ASTROLÓGICA EN VIVO & VISIBLE INMEDIATAMENTE */}
-            <div className="p-6 sm:p-10 rounded-3xl bg-surface-50/60 backdrop-blur-2xl border border-astral-roseGold/20 shadow-2xl space-y-6">
+            <div className="p-6 sm:p-10 rounded-3xl bg-surface-50/35 backdrop-blur-xl border border-astral-roseGold/20 shadow-2xl space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
                 <div>
                   <span className="text-xs uppercase tracking-widest text-astral-roseGold font-mono font-medium block">
@@ -281,7 +281,7 @@ export default function Home() {
 
             {/* CUATRO PILARES ARQUITECTÓNICOS */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-5 pt-10 border-t border-white/5 text-xs">
-              <div className="p-6 rounded-3xl bg-surface-50/50 backdrop-blur-md border border-astral-roseGold/10 space-y-2.5">
+              <div className="p-6 rounded-3xl bg-surface-50/30 backdrop-blur-lg border border-astral-roseGold/15 space-y-2.5">
                 <span className="text-[10px] font-mono uppercase text-astral-roseGold tracking-widest block">
                   Pilar 1
                 </span>
@@ -291,7 +291,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="p-6 rounded-3xl bg-surface-50/50 backdrop-blur-md border border-astral-roseGold/10 space-y-2.5">
+              <div className="p-6 rounded-3xl bg-surface-50/30 backdrop-blur-lg border border-astral-champagne/15 space-y-2.5">
                 <span className="text-[10px] font-mono uppercase text-astral-champagne tracking-widest block">
                   Pilar 2
                 </span>
@@ -301,7 +301,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="p-6 rounded-3xl bg-surface-50/50 backdrop-blur-md border border-astral-roseGold/10 space-y-2.5">
+              <div className="p-6 rounded-3xl bg-surface-50/30 backdrop-blur-lg border border-astral-roseGold/15 space-y-2.5">
                 <span className="text-[10px] font-mono uppercase text-astral-roseGold tracking-widest block">
                   Pilar 3
                 </span>
@@ -311,7 +311,7 @@ export default function Home() {
                 </p>
               </div>
 
-              <div className="p-6 rounded-3xl bg-surface-50/50 backdrop-blur-md border border-astral-roseGold/10 space-y-2.5">
+              <div className="p-6 rounded-3xl bg-surface-50/30 backdrop-blur-lg border border-astral-champagne/15 space-y-2.5">
                 <span className="text-[10px] font-mono uppercase text-astral-champagne tracking-widest block">
                   Pilar 4
                 </span>

@@ -111,11 +111,16 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
   const [suggestionsB, setSuggestionsB] = useState<PlaceSuggestion[]>([]);
   const [showSugB, setShowSugB] = useState(false);
 
+  const [isSearchingA, setIsSearchingA] = useState(false);
+  const [isSearchingB, setIsSearchingB] = useState(false);
+
   useEffect(() => {
     if (queryA.trim().length < 2) {
       setSuggestionsA([]);
+      setIsSearchingA(false);
       return;
     }
+    setIsSearchingA(true);
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/geo/search?q=${encodeURIComponent(queryA)}`);
@@ -126,6 +131,8 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
         }
       } catch (err) {
         console.error('Error fetching places for A:', err);
+      } finally {
+        setIsSearchingA(false);
       }
     }, 350);
     return () => clearTimeout(timer);
@@ -134,8 +141,10 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
   useEffect(() => {
     if (queryB.trim().length < 2) {
       setSuggestionsB([]);
+      setIsSearchingB(false);
       return;
     }
+    setIsSearchingB(true);
     const timer = setTimeout(async () => {
       try {
         const res = await fetch(`/api/geo/search?q=${encodeURIComponent(queryB)}`);
@@ -146,6 +155,8 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
         }
       } catch (err) {
         console.error('Error fetching places for B:', err);
+      } finally {
+        setIsSearchingB(false);
       }
     }, 350);
     return () => clearTimeout(timer);
@@ -283,37 +294,58 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
               value={queryA}
               onChange={(e) => {
                 setQueryA(e.target.value);
-                setShowSugA(true);
+                if (!e.target.value) {
+                  setPersonA((prev) => ({
+                    ...prev,
+                    city: '',
+                    country: '',
+                    latitude: 0,
+                    longitude: 0,
+                  }));
+                }
               }}
-              onFocus={() => suggestionsA.length > 0 && setShowSugA(true)}
-              className="w-full px-4 py-2.5 rounded-2xl bg-surface-100/80 border border-white/10 text-white text-sm focus:outline-none focus:border-astral-roseGold/70 transition"
-              placeholder="Ej: Trujillo, Perú..."
+              className="w-full px-4 py-2.5 rounded-2xl bg-surface-100/50 backdrop-blur-md border border-white/10 text-white text-sm focus:outline-none focus:border-astral-roseGold/70 transition"
+              placeholder="Buscar ciudad (ej: Trujillo, Lima, Madrid)..."
             />
+            {isSearchingA && (
+              <span className="absolute right-3.5 top-9 text-xs text-astral-roseGold animate-pulse font-mono">
+                Buscando...
+              </span>
+            )}
+
             {showSugA && suggestionsA.length > 0 && (
-              <ul className="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-surface-200 border border-astral-roseGold/20 rounded-2xl shadow-2xl divide-y divide-white/5">
+              <ul className="absolute z-50 left-0 right-0 mt-1.5 max-h-48 overflow-y-auto rounded-2xl bg-surface-100/95 backdrop-blur-xl border border-astral-roseGold/30 shadow-2xl text-xs py-1">
                 {suggestionsA.map((s, idx) => (
                   <li
-                    key={`sugA-${idx}`}
+                    key={idx}
                     onClick={() => handleSelectPlaceA(s)}
-                    className="p-3 hover:bg-white/5 cursor-pointer text-xs text-slate-200 transition flex justify-between items-center"
+                    className="px-4 py-2 hover:bg-surface-200 cursor-pointer text-slate-200 hover:text-white transition flex flex-col"
                   >
-                    <span>{s.formattedAddress}</span>
-                    <span className="text-[10px] text-astral-roseGold font-mono">
-                      {s.timezoneIana}
+                    <span className="font-medium text-astral-roseGold">{s.city}</span>
+                    <span className="text-[10px] text-slate-400">
+                      {s.state ? `${s.state}, ` : ''}
+                      {s.country} · TZ: {s.timezoneIana}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
-            <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500 font-mono">
-              <span>Lat: {personA.latitude.toFixed(2)}°</span>
-              <span>Long: {personA.longitude.toFixed(2)}°</span>
-            </div>
           </div>
+
+          {personA.latitude !== 0 && (
+            <div className="p-3 rounded-2xl bg-surface-100/30 border border-white/5 text-[11px] text-slate-300 flex justify-between items-center">
+              <span>
+                📍 {personA.city}, {personA.country}
+              </span>
+              <span className="font-mono text-astral-roseGold">
+                {personA.latitude.toFixed(2)}°, {personA.longitude.toFixed(2)}°
+              </span>
+            </div>
+          )}
         </div>
 
         {/* PERSONA B */}
-        <div className="p-6 sm:p-8 bg-surface-50/80 backdrop-blur-md rounded-3xl border border-astral-champagne/20 shadow-xl relative space-y-5">
+        <div className="p-6 sm:p-8 bg-surface-50/40 backdrop-blur-xl rounded-3xl border border-astral-champagne/25 shadow-2xl relative space-y-5">
           <div className="flex items-center justify-between border-b border-white/5 pb-3">
             <div className="flex items-center gap-2">
               <span className="w-2 h-2 rounded-full bg-astral-champagne animate-pulse"></span>
@@ -335,7 +367,7 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
               required
               value={personB.name}
               onChange={(e) => setPersonB({ ...personB, name: e.target.value })}
-              className="w-full px-4 py-2.5 rounded-2xl bg-surface-100/80 border border-white/10 text-white text-sm focus:outline-none focus:border-astral-champagne/70 transition shadow-inner"
+              className="w-full px-4 py-2.5 rounded-2xl bg-surface-100/50 backdrop-blur-md border border-white/10 text-white text-sm focus:outline-none focus:border-astral-champagne/70 transition shadow-inner"
               placeholder="Ej: Mateo"
             />
           </div>
@@ -350,7 +382,7 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
                 required
                 value={personB.birthDate}
                 onChange={(e) => setPersonB({ ...personB, birthDate: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-surface-100/80 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-astral-champagne/70 transition"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-surface-100/50 backdrop-blur-md border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-astral-champagne/70 transition"
               />
             </div>
             <div>
@@ -362,7 +394,7 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
                 required
                 value={personB.birthTime}
                 onChange={(e) => setPersonB({ ...personB, birthTime: e.target.value })}
-                className="w-full px-3.5 py-2.5 rounded-2xl bg-surface-100/80 border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-astral-champagne/70 transition"
+                className="w-full px-3.5 py-2.5 rounded-2xl bg-surface-100/50 backdrop-blur-md border border-white/10 text-white text-xs sm:text-sm focus:outline-none focus:border-astral-champagne/70 transition"
               />
             </div>
           </div>
@@ -381,26 +413,27 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
                 setShowSugB(true);
               }}
               onFocus={() => suggestionsB.length > 0 && setShowSugB(true)}
-              className="w-full px-4 py-2.5 rounded-2xl bg-surface-100/80 border border-white/10 text-white text-sm focus:outline-none focus:border-astral-champagne/70 transition"
+              className="w-full px-4 py-2.5 rounded-2xl bg-surface-100/50 backdrop-blur-md border border-white/10 text-white text-sm focus:outline-none focus:border-astral-champagne/70 transition"
               placeholder="Ej: Madrid, España..."
             />
             {showSugB && suggestionsB.length > 0 && (
-              <ul className="absolute z-30 left-0 right-0 mt-1 max-h-48 overflow-y-auto bg-surface-200 border border-astral-champagne/20 rounded-2xl shadow-2xl divide-y divide-white/5">
+              <ul className="absolute z-50 left-0 right-0 mt-1.5 max-h-48 overflow-y-auto rounded-2xl bg-surface-100/95 backdrop-blur-xl border border-astral-champagne/30 shadow-2xl text-xs py-1">
                 {suggestionsB.map((s, idx) => (
                   <li
                     key={`sugB-${idx}`}
                     onClick={() => handleSelectPlaceB(s)}
-                    className="p-3 hover:bg-white/5 cursor-pointer text-xs text-slate-200 transition flex justify-between items-center"
+                    className="px-4 py-2 hover:bg-surface-200 cursor-pointer text-slate-200 hover:text-white transition flex flex-col"
                   >
-                    <span>{s.formattedAddress}</span>
-                    <span className="text-[10px] text-astral-champagne font-mono">
-                      {s.timezoneIana}
+                    <span className="font-medium text-astral-champagne">{s.city}</span>
+                    <span className="text-[10px] text-slate-400">
+                      {s.state ? `${s.state}, ` : ''}
+                      {s.country} · TZ: {s.timezoneIana}
                     </span>
                   </li>
                 ))}
               </ul>
             )}
-            <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-500 font-mono">
+            <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400 font-mono">
               <span>Lat: {personB.latitude.toFixed(2)}°</span>
               <span>Long: {personB.longitude.toFixed(2)}°</span>
             </div>

@@ -10,6 +10,7 @@ import {
 import { SynastryContextDigest } from '@/lib/ai/contextSerializer';
 import { AstroWheel } from '../astrology/AstroWheel';
 import { RelationshipChat } from '../chat/RelationshipChat';
+import { PlanetaryPositionsTable } from '../astrology/PlanetaryPositionsTable';
 
 interface ReportViewProps {
   chartA: NatalChart;
@@ -31,6 +32,7 @@ type TabKey =
   | 'composite'
   | 'compatibility'
   | 'wheels'
+  | 'ephemeris'
   | 'chat';
 
 export const ReportView: React.FC<ReportViewProps> = ({
@@ -138,6 +140,7 @@ export const ReportView: React.FC<ReportViewProps> = ({
           { id: 'composite', label: '6. Carta Compuesta' },
           { id: 'compatibility', label: '7. Mapa de Compatibilidad' },
           { id: 'wheels', label: '✦ Ruedas Interactivas' },
+          { id: 'ephemeris', label: '✦ Efemérides Reales' },
           { id: 'chat', label: '💬 Consulta con IA' },
         ].map((tab) => {
           const isActive = activeTab === tab.id;
@@ -698,6 +701,40 @@ export const ReportView: React.FC<ReportViewProps> = ({
                 title={`Carta Compuesta: ${composite.relationshipTitle}`}
               />
             )}
+          </div>
+        )}
+
+        
+        {/* PESTAÑA: EFEMÉRIDES REALES Y POSICIONES EXACTAS */}
+        {activeTab === 'ephemeris' && (
+          <div className="p-8 sm:p-10 rounded-3xl bg-surface-50/80 border border-white/5 shadow-xl space-y-8">
+            <div className="space-y-1">
+              <span className="text-xs uppercase tracking-widest text-astral-cyan font-mono">
+                Cálculos de Precisión
+              </span>
+              <h2 className="text-2xl sm:text-3xl font-serif text-white font-normal">
+                Efemérides Planetarias Astronómicas Reales
+              </h2>
+              <p className="text-sm text-slate-300 font-light">
+                Cada posición zodiacal es calculada deterministamente en base a los algoritmos astronómicos de la fecha, hora exacta y coordenadas geográficas. Al cambiar cualquier fecha o ciudad, las posiciones celestes y orbes de sinastría varían de forma real.
+              </p>
+            </div>
+
+            <div className="space-y-8">
+              <div>
+                <h3 className="text-base font-serif text-astral-cyan mb-3 flex items-center gap-2">
+                  <span>✦</span> Carta Natal de {chartA.profile.name}
+                </h3>
+                <PlanetaryPositionsTable chart={chartA} accentColor="cyan" />
+              </div>
+
+              <div>
+                <h3 className="text-base font-serif text-astral-azure mb-3 flex items-center gap-2">
+                  <span>✦</span> Carta Natal de {chartB.profile.name}
+                </h3>
+                <PlanetaryPositionsTable chart={chartB} accentColor="azure" />
+              </div>
+            </div>
           </div>
         )}
 

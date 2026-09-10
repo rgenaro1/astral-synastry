@@ -197,17 +197,17 @@ export default function Home() {
             </div>
 
             {/* SECCIÓN DESTACADA: RUEDA ASTROLÓGICA EN VIVO & VISIBLE INMEDIATAMENTE */}
-            <div className="p-6 sm:p-10 rounded-3xl bg-surface-50/35 backdrop-blur-xl border border-astral-roseGold/20 shadow-2xl space-y-6">
+            <div className="p-6 sm:p-10 rounded-3xl bg-surface-50/35 backdrop-blur-xl border border-astral-cyan/20 shadow-2xl space-y-6">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/5 pb-4">
                 <div>
-                  <span className="text-xs uppercase tracking-widest text-astral-roseGold font-mono font-medium block">
-                    Demostración Interactiva en Tiempo Real
-                  </span>
-                  <h3 className="text-xl sm:text-2xl font-serif text-white mt-1">
-                    Explora la Esfera Celeste
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-astral-cyan/15 border border-astral-cyan/30 text-[11px] text-astral-cyan font-mono mb-2">
+                    <span>✦</span> Modo Demostración Rápida
+                  </div>
+                  <h3 className="text-xl sm:text-2xl font-serif text-white">
+                    Esfera Celeste Interactiva (Ejemplo: Elena & Mateo)
                   </h3>
-                  <p className="text-xs text-slate-400 font-light mt-0.5">
-                    Toca o pasa el cursor sobre los planetas para revelar su significado arquetípico y consejos de armonía.
+                  <p className="text-xs text-slate-300 font-light mt-1 max-w-2xl">
+                    Esta es una demostración interactiva de ejemplo. Para calcular el análisis con las <strong className="text-astral-cyan">efemérides astronómicas exactas</strong> de tu vínculo, ingresa los datos de ambas personas en el formulario inferior y haz clic en «Revelar Sinastría & Mapa de Almas».
                   </p>
                 </div>
 

@@ -14,15 +14,24 @@ export async function POST(request: NextRequest) {
     const parseResult = SynastryInputSchema.safeParse(body);
 
     if (!parseResult.success) {
+      const issueDetails = parseResult.error.issues
+        .map((i) => `${i.path.join('.')}: ${i.message}`)
+        .join(', ');
+      
+      console.warn('Validación fallida en /api/synastry/analyze:', issueDetails);
       return NextResponse.json(
-        { error: 'Datos de entrada inválidos', details: parseResult.error.format() },
+        {
+          error: `Datos de entrada incompletos o inválidos (${issueDetails})`,
+          message: `Por favor verifica los datos: ${issueDetails}`,
+          details: parseResult.error.format(),
+        },
         { status: 400 }
       );
     }
 
     const { personA, personB, houseSystem } = parseResult.data;
 
-    // 1. Calcular Cartas Natales deterministas
+    // 1. Calcular Cartas Natales deterministas con efemérides astronómicas
     const chartA = calculateNatalChart(personA, houseSystem);
     const chartB = calculateNatalChart(personB, houseSystem);
 

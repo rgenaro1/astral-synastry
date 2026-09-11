@@ -36,7 +36,7 @@ export function calculateSynastry(
     chartB
   );
 
-  // 4. Verificación de Llamas Gemelas Predestinadas (24 Oct 1996 & 18 Dic 1987)
+  // 4. Verificación de Llamas Gemelas Predestinadas
   const isTwinFlame = isTwinFlamePair(chartA.profile.birthDate, chartB.profile.birthDate);
 
   let averageScore: number;
@@ -44,9 +44,51 @@ export function calculateSynastry(
   let archetypeTitle: string;
 
   if (isTwinFlame) {
-    averageScore = 98;
-    harmonyIndex = 98;
+    // Calculamos micro-variaciones sutiles y deterministas entre 96% y 98% según:
+    // - Hora exacta de nacimiento (que mueve el Ascendente 1° cada 4 min y la Luna)
+    // - Coordenadas geográficas (latitud y longitud de nacimiento)
+    const moonA = chartA.planets.find((p) => p.id === 'moon')?.longitude || 0;
+    const moonB = chartB.planets.find((p) => p.id === 'moon')?.longitude || 0;
+    const ascA = chartA.angles?.ascendant?.longitude || 0;
+    const ascB = chartB.angles?.ascendant?.longitude || 0;
+
+    // Resonancia armónica de ángulos (entre -1 y +1)
+    const moonDiff = Math.abs(moonA - moonB);
+    const ascDiff = Math.abs(ascA - ascB);
+    const geoHarmonic = Math.sin(((chartA.profile.latitude + chartB.profile.longitude) * Math.PI) / 90);
+    
+    const timeHarmony =
+      Math.cos((moonDiff * Math.PI) / 60) * 0.4 +
+      Math.cos((ascDiff * Math.PI) / 60) * 0.4 +
+      geoHarmonic * 0.2;
+
+    // Offset armónico entre 0, 1 y 2:
+    // timeHarmony < -0.1 => 96%
+    // -0.1 <= timeHarmony < 0.4 => 97%
+    // timeHarmony >= 0.4 => 98%
+    let offset = 2; // Por defecto 98%
+    if (timeHarmony < -0.1) {
+      offset = 0; // 96%
+    } else if (timeHarmony < 0.4) {
+      offset = 1; // 97%
+    } else {
+      offset = 2; // 98%
+    }
+
+    averageScore = 96 + offset; // Resulta en 96%, 97% o 98%
+    harmonyIndex = averageScore;
     archetypeTitle = 'Llamas Gemelas Predestinadas';
+
+    // Dimensiones con ligeras variaciones coordinadas según la hora y el lugar:
+    const commScore = 97 + offset; // 97%, 98% o 99% (promedio solicitado: 99%)
+    const stabScore = 95 + (offset >= 1 ? 1 : 0) + (offset === 2 ? 0 : 0); // 95% o 96% (solicitado: 96%)
+    const emoScore = 97 + offset; // 97%, 98% o 99%
+    const attrScore = 96 + offset; // 96%, 97% o 98%
+    const intScore = 97 + offset; // 97%, 98% o 99%
+    const romScore = 96 + offset; // 96%, 97% o 98%
+    const growScore = 96 + offset; // 96%, 97% o 98%
+    const dailyScore = 94 + offset; // 94%, 95% o 96%
+    const confScore = 14 - offset; // 14%, 13% o 12%
 
     dimensions = dimensions.map((dim) => {
       switch (dim.id) {
@@ -54,7 +96,7 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Comunión Intelectual & Mente',
-            score: 99,
+            score: Math.min(99, commScore),
             level: 'Excepcional & Telepática',
             summary: 'Sincronía cognitiva sublime, diálogo inagotable y comprensión mutua sin necesidad de palabras.',
             positiveFactors: [
@@ -66,7 +108,7 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Compromiso, Lealtad & Tiempo (Saturno)',
-            score: 96,
+            score: Math.min(97, stabScore >= 95 ? 96 : 95),
             level: 'Inquebrantable & Eterna',
             summary: 'Estructura saturnina bendecida para perdurar a través de los años con lealtad incondicional y devoción sólida.',
             positiveFactors: [
@@ -78,7 +120,7 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Conexión Emocional & Cobijo',
-            score: 99,
+            score: Math.min(99, emoScore),
             level: 'Excepcional & Sagrada',
             summary: 'Cobijo anímico total; un santuario de intimidad y ternura donde toda vulnerabilidad es abrazada con reverencia.',
             positiveFactors: [
@@ -90,7 +132,7 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Atracción & Magnetismo',
-            score: 98,
+            score: Math.min(98, attrScore),
             level: 'Magnética & Arrebatadora',
             summary: 'Chispa erótica fascinante y polaridad física inextinguible que madura en sofisticación sensual con el paso del tiempo.',
             positiveFactors: [
@@ -102,7 +144,7 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Intensidad & Profundidad',
-            score: 99,
+            score: Math.min(99, intScore),
             level: 'Transformadora & Sagrada',
             summary: 'El impacto espiritual más hondo que dos almas pueden experimentar, despertando su versión más luminosa.',
             positiveFactors: [
@@ -114,7 +156,7 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Romanticismo & Ternura',
-            score: 98,
+            score: Math.min(98, romScore),
             level: 'Poética & Devocional',
             summary: 'Dulzura inagotable, admiración recíproca y la gracia de convertir cada día compartido en poesía viva.',
             positiveFactors: [
@@ -126,7 +168,7 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Crecimiento Mutuo',
-            score: 98,
+            score: Math.min(98, growScore),
             level: 'Excepcional & Expansiva',
             summary: 'Inspiración continua que ensancha la visión del mundo, atrae abundancia y da alas a cada sueño compartido.',
             positiveFactors: [
@@ -138,7 +180,7 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Compatibilidad Cotidiana',
-            score: 96,
+            score: Math.min(96, dailyScore),
             level: 'Fluida & Serena',
             summary: 'Convivencia armónica y respetuosa donde cada uno tiene su espacio vital en perfecta sintonía.',
             positiveFactors: [
@@ -150,7 +192,7 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Tensión / Desafío Constructivo',
-            score: 12,
+            score: Math.max(11, confScore),
             level: 'Fricción Mínima (Armonía Pura)',
             summary: 'Tensión mínima y exclusivamente constructiva; cualquier discrepancia se disuelve en minutos desde la compasión y el amor.',
             positiveFactors: [

@@ -29,11 +29,22 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
   const [city, setCity] = useState<string>(initialLocation?.city || 'Lima');
   const [country, setCountry] = useState<string>(initialLocation?.country || 'Perú');
   const [timezoneIana, setTimezoneIana] = useState<string>(initialLocation?.timezoneIana || 'America/Lima');
+  const [mapType, setMapType] = useState<'streets' | 'satellite'>('streets');
   const [isLoadingTz, setIsLoadingTz] = useState(false);
-  const [hoverCoord, setHoverCoord] = useState<{ lat: number; lng: number } | null>(null);
 
-  const svgRef = useRef<SVGSVGElement | null>(null);
+  // Buscador dentro del mapa
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchSuggestions, setSearchSuggestions] = useState<any[]>([]);
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
 
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<any>(null);
+  const markerRef = useRef<any>(null);
+  const roadLayerRef = useRef<any>(null);
+  const satelliteLayerRef = useRef<any>(null);
+
+  // Actualizar coordenadas iniciales si cambian
   useEffect(() => {
     if (initialLocation?.latitude !== undefined && initialLocation?.longitude !== undefined) {
       setLat(initialLocation.latitude);
@@ -44,14 +55,6 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
     }
   }, [initialLocation, isOpen]);
 
-  if (!isOpen) return null;
-
-  // Convertir lat/lng a coordenadas SVG (viewBox: 0 0 1000 500)
-  // X: -180 a +180 => 0 a 1000
-  // Y: +90 a -90 => 0 a 500
-  const markerX = ((lng + 180) / 360) * 1000;
-  const markerY = ((90 - lat) / 180) * 500;
-
   // Actualizar zona horaria cuando cambian las coordenadas
   const updateTimezone = async (latitude: number, longitude: number) => {
     setIsLoadingTz(true);
@@ -59,8 +62,8 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
       const res = await fetch(`/api/geo/timezone?lat=${latitude}&lng=${longitude}`);
       if (res.ok) {
         const data = await res.json();
-        if (data.timezoneIana) {
-          setTimezoneIana(data.timezoneIana);
+        if (data.timezoneIana || data.timezone) {
+          setTimezoneIana(data.timezoneIana || data.timezone);
         }
       }
     } catch (err) {
@@ -70,25 +73,16 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
     }
   };
 
-  // Manejar clic en el mapa
-  const handleMapClick = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const clickX = ((e.clientX - rect.left) / rect.width) * 1000;
-    const clickY = ((e.clientY - rect.top) / rect.height) * 500;
+  // Manejador central de cambio de coordenadas
+  const handleCoordsChange = (newLat: number, newLng: number) => {
+    const roundedLat = Number(newLat.toFixed(4));
+    const roundedLng = Number(newLng.toFixed(4));
+    setLat(roundedLat);
+    setLng(roundedLng);
 
-    const rawLng = (clickX / 1000) * 360 - 180;
-    const rawLat = 90 - (clickY / 500) * 180;
-
-    const clampedLat = Math.max(-85, Math.min(85, Number(rawLat.toFixed(4))));
-    const clampedLng = Math.max(-180, Math.min(180, Number(rawLng.toFixed(4))));
-
-    setLat(clampedLat);
-    setLng(clampedLng);
-
-    // Buscar si hay una ciudad cercana conocida
+    // Buscar si hay una ciudad conocida cercana
     const nearest = POPULAR_CITIES.find(
-      (c) => Math.abs(c.latitude - clampedLat) < 1.5 && Math.abs(c.longitude - clampedLng) < 1.5
+      (c) => Math.abs(c.latitude - roundedLat) < 0.6 && Math.abs(c.longitude - roundedLng) < 0.6
     );
 
     if (nearest) {
@@ -96,31 +90,173 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
       setCountry(nearest.country);
       setTimezoneIana(nearest.timezoneIana);
     } else {
-      setCity((prev) => (prev && prev !== 'Lima' ? prev : 'Ubicación seleccionada'));
-      setCountry((prev) => (prev && prev !== 'Perú' ? prev : 'Coordenadas del Mapa'));
-      updateTimezone(clampedLat, clampedLng);
+      updateTimezone(roundedLat, roundedLng);
     }
   };
 
-  const handleMouseMove = (e: React.MouseEvent<SVGSVGElement>) => {
-    if (!svgRef.current) return;
-    const rect = svgRef.current.getBoundingClientRect();
-    const clickX = ((e.clientX - rect.left) / rect.width) * 1000;
-    const clickY = ((e.clientY - rect.top) / rect.height) * 500;
-    const hLng = (clickX / 1000) * 360 - 180;
-    const hLat = 90 - (clickY / 500) * 180;
-    setHoverCoord({
-      lat: Number(Math.max(-85, Math.min(85, hLat)).toFixed(2)),
-      lng: Number(Math.max(-180, Math.min(180, hLng)).toFixed(2)),
+  // Inicializar Leaflet con Google Maps Tiles
+  useEffect(() => {
+    if (!isOpen || !mapContainerRef.current) return;
+
+    let isCancelled = false;
+
+    import('leaflet').then((LModule) => {
+      if (isCancelled || !mapContainerRef.current) return;
+      const L = (LModule as any).default || LModule;
+
+      // Si ya existía un mapa previo en este contenedor, removerlo
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+
+      const initialLat = lat || -12.0464;
+      const initialLng = lng || -77.0428;
+
+      // Crear instancia de mapa con centro inicial
+      const map = L.map(mapContainerRef.current, {
+        center: [initialLat, initialLng],
+        zoom: 11,
+        zoomControl: false,
+      });
+      mapInstanceRef.current = map;
+
+      // Control de zoom
+      L.control.zoom({ position: 'topleft' }).addTo(map);
+
+      // 1. Google Maps Road / Street Tiles
+      const googleRoads = L.tileLayer('https://mt1.google.com/vt/lyrs=m&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '&copy; Google Maps',
+      });
+      roadLayerRef.current = googleRoads;
+
+      // 2. Google Maps Satellite Hybrid Tiles (Fotografía satelital con calles y nombres)
+      const googleSatellite = L.tileLayer('https://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        maxZoom: 20,
+        subdomains: ['mt0', 'mt1', 'mt2', 'mt3'],
+        attribution: '&copy; Google Maps Satélite',
+      });
+      satelliteLayerRef.current = googleSatellite;
+
+      // Capa inicial
+      if (mapType === 'satellite') {
+        googleSatellite.addTo(map);
+      } else {
+        googleRoads.addTo(map);
+      }
+
+      // Pin vectorial estilo Google Maps con sombra
+      const pinHtml = `
+        <div style="position: relative; width: 34px; height: 42px; transform: translate(-50%, -100%); cursor: pointer; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">
+          <svg width="34" height="42" viewBox="0 0 34 42" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M17 0C7.611 0 0 7.611 0 17C0 27.5 17 42 17 42C17 42 34 27.5 34 17C34 7.611 26.389 0 17 0Z" fill="#EA4335"/>
+            <circle cx="17" cy="15" r="7" fill="#FFFFFF"/>
+            <circle cx="17" cy="15" r="3.5" fill="#B31412"/>
+          </svg>
+        </div>
+      `;
+
+      const customIcon = L.divIcon({
+        html: pinHtml,
+        className: 'google-maps-pin',
+        iconSize: [34, 42],
+        iconAnchor: [17, 42],
+      });
+
+      const marker = L.marker([initialLat, initialLng], {
+        icon: customIcon,
+        draggable: true,
+      }).addTo(map);
+      markerRef.current = marker;
+
+      // Evento: fin de arrastre del pin
+      marker.on('dragend', (e: any) => {
+        const newPos = e.target.getLatLng();
+        handleCoordsChange(newPos.lat, newPos.lng);
+      });
+
+      // Evento: clic en cualquier punto del mapa
+      map.on('click', (e: any) => {
+        marker.setLatLng(e.latlng);
+        map.panTo(e.latlng, { animate: true, duration: 0.6 });
+        handleCoordsChange(e.latlng.lat, e.latlng.lng);
+      });
+
+      // Asegurar redibujado correcto de tiles
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 250);
     });
+
+    return () => {
+      isCancelled = true;
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
+    };
+  }, [isOpen]);
+
+  // Cambiar entre capa Callejera y Satélite
+  const handleToggleMapType = (type: 'streets' | 'satellite') => {
+    setMapType(type);
+    if (!mapInstanceRef.current || !roadLayerRef.current || !satelliteLayerRef.current) return;
+
+    if (type === 'satellite') {
+      mapInstanceRef.current.removeLayer(roadLayerRef.current);
+      satelliteLayerRef.current.addTo(mapInstanceRef.current);
+    } else {
+      mapInstanceRef.current.removeLayer(satelliteLayerRef.current);
+      roadLayerRef.current.addTo(mapInstanceRef.current);
+    }
   };
 
-  const handleSelectPopularCity = (c: typeof POPULAR_CITIES[0]) => {
-    setLat(c.latitude);
-    setLng(c.longitude);
-    setCity(c.city);
-    setCountry(c.country);
-    setTimezoneIana(c.timezoneIana);
+  // Volar a una ciudad seleccionada
+  const handleFlyToLocation = (cLat: number, cLng: number, cCity?: string, cCountry?: string, cTz?: string) => {
+    handleCoordsChange(cLat, cLng);
+    if (cCity) setCity(cCity);
+    if (cCountry) setCountry(cCountry);
+    if (cTz) setTimezoneIana(cTz);
+
+    if (mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([cLat, cLng], 12, { duration: 1.2 });
+    }
+    if (markerRef.current) {
+      markerRef.current.setLatLng([cLat, cLng]);
+    }
+  };
+
+  // Búsqueda interactiva en el mapa
+  useEffect(() => {
+    if (searchQuery.trim().length < 2) {
+      setSearchSuggestions([]);
+      setIsSearching(false);
+      return;
+    }
+    setIsSearching(true);
+    const timer = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/geo/search?q=${encodeURIComponent(searchQuery)}`);
+        if (res.ok) {
+          const data = await res.json();
+          setSearchSuggestions(data.places || []);
+          setShowSearchDropdown(true);
+        }
+      } catch (e) {
+        console.error('Error buscando lugar en mapa:', e);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 280);
+    return () => clearTimeout(timer);
+  }, [searchQuery]);
+
+  const handleSelectSearchResult = (p: any) => {
+    handleFlyToLocation(p.latitude, p.longitude, p.city, p.country, p.timezoneIana);
+    setSearchQuery(p.formattedAddress || p.city);
+    setShowSearchDropdown(false);
   };
 
   const handleConfirm = () => {
@@ -137,7 +273,6 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
     onClose();
   };
 
-  // Ciudades sugeridas para botones rápidos
   const QUICK_CITIES = [
     { name: 'Lima', country: 'Perú', lat: -12.0464, lng: -77.0428, tz: 'America/Lima' },
     { name: 'Trujillo', country: 'Perú', lat: -8.1116, lng: -79.0286, tz: 'America/Lima' },
@@ -153,24 +288,58 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
     { name: 'Miami', country: 'EE.UU.', lat: 25.7617, lng: -80.1918, tz: 'America/New_York' },
   ];
 
+  if (!isOpen) return null;
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-4xl bg-surface-100/95 border border-astral-cyan/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
-        {/* Cabecera */}
-        <div className="px-6 py-4 border-b border-white/10 flex items-center justify-between bg-surface-50/70">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-xl bg-astral-cyan/20 border border-astral-cyan/40 flex items-center justify-center text-astral-cyan font-serif text-sm">
-              🗺️
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full max-w-5xl bg-surface-100/95 border border-astral-cyan/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[96vh]">
+        {/* Cabecera con Buscador estilo Google Maps */}
+        <div className="px-5 py-3.5 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 bg-surface-50/80">
+          <div className="flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 font-serif text-sm">
+              📍
             </div>
             <div>
-              <h3 className="text-base sm:text-lg font-serif text-white font-medium">
-                Selector de Coordenadas Terrestres
+              <h3 className="text-sm sm:text-base font-serif text-white font-medium">
+                Selector de Ubicación Geográfica
               </h3>
-              <p className="text-xs text-slate-400 font-light">
-                Fijando ubicación natal para <span className="text-astral-cyan font-medium">{personName}</span>
+              <p className="text-[11px] text-slate-400 font-light">
+                Para <strong className="text-astral-cyan">{personName}</strong> · Haz clic o arrastra el pin en el mapa
               </p>
             </div>
           </div>
+
+          {/* Buscador dentro del mapa */}
+          <div className="relative flex-1 max-w-sm">
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onFocus={() => searchSuggestions.length > 0 && setShowSearchDropdown(true)}
+              placeholder="Buscar ciudad o dirección en Google Maps..."
+              className="w-full px-3.5 py-1.5 rounded-xl bg-surface-200/90 border border-white/15 text-white text-xs placeholder:text-slate-400 focus:outline-none focus:border-astral-cyan"
+            />
+            {isSearching && (
+              <span className="absolute right-3 top-2 text-[10px] text-astral-cyan animate-pulse">
+                ...
+              </span>
+            )}
+            {showSearchDropdown && searchSuggestions.length > 0 && (
+              <ul className="absolute z-50 left-0 right-0 mt-1 max-h-48 overflow-y-auto rounded-xl bg-surface-100/95 backdrop-blur-xl border border-astral-cyan/30 shadow-2xl text-xs py-1">
+                {searchSuggestions.map((s, idx) => (
+                  <li
+                    key={idx}
+                    onClick={() => handleSelectSearchResult(s)}
+                    className="px-3 py-1.5 hover:bg-surface-200 cursor-pointer text-slate-200 hover:text-white transition flex flex-col"
+                  >
+                    <span className="font-medium text-astral-cyan">{s.city}</span>
+                    <span className="text-[10px] text-slate-400">{s.formattedAddress}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
+
           <button
             type="button"
             onClick={onClose}
@@ -180,260 +349,123 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
           </button>
         </div>
 
-        {/* Contenido Principal */}
-        <div className="p-4 sm:p-6 overflow-y-auto space-y-4">
-          {/* Instrucción y coordenadas en hover */}
-          <div className="flex flex-wrap items-center justify-between gap-2 text-xs">
-            <span className="text-slate-300 font-light flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-astral-cyan animate-pulse"></span>
-              Haz clic directamente en cualquier punto del mapa terráqueo para colocar el pin cósmico:
-            </span>
-            {hoverCoord && (
-              <span className="font-mono text-[11px] text-astral-cyan/80 bg-surface-200/60 px-2 py-0.5 rounded-lg border border-white/5">
-                Cursor: {hoverCoord.lat > 0 ? `${hoverCoord.lat}°N` : `${Math.abs(hoverCoord.lat)}°S`},{' '}
-                {hoverCoord.lng > 0 ? `${hoverCoord.lng}°E` : `${Math.abs(hoverCoord.lng)}°O`}
-              </span>
-            )}
-          </div>
+        {/* CONTENEDOR DEL MAPA GOOGLE MAPS */}
+        <div className="relative w-full h-[400px] sm:h-[460px] bg-slate-900 select-none">
+          {/* Contenedor Leaflet */}
+          <div ref={mapContainerRef} className="w-full h-full" />
 
-          {/* MAPA INTERACTIVO SVG */}
-          <div className="relative w-full aspect-[2/1] rounded-2xl overflow-hidden border border-astral-cyan/30 bg-gradient-to-b from-[#030914] via-[#051329] to-[#020712] shadow-inner select-none">
-            <svg
-              ref={svgRef}
-              viewBox="0 0 1000 500"
-              className="w-full h-full cursor-crosshair"
-              onClick={handleMapClick}
-              onMouseMove={handleMouseMove}
-              onMouseLeave={() => setHoverCoord(null)}
+          {/* Selector de Capa Estilo Google Maps (Callejero vs Satélite) */}
+          <div className="absolute top-3 right-3 z-[400] flex rounded-xl overflow-hidden border border-black/30 shadow-lg bg-white text-xs font-sans">
+            <button
+              type="button"
+              onClick={() => handleToggleMapType('streets')}
+              className={`px-3 py-1.5 font-medium transition ${
+                mapType === 'streets'
+                  ? 'bg-[#1a73e8] text-white shadow-sm'
+                  : 'bg-white text-slate-700 hover:bg-slate-100'
+              }`}
             >
-              <defs>
-                <radialGradient id="oceanGlow" cx="50%" cy="50%" r="70%">
-                  <stop offset="0%" stopColor="#082042" stopOpacity="0.8" />
-                  <stop offset="100%" stopColor="#020817" stopOpacity="1" />
-                </radialGradient>
-                <filter id="glowPin" x="-50%" y="-50%" width="200%" height="200%">
-                  <feGaussianBlur stdDeviation="4" result="blur" />
-                  <feComposite in="SourceGraphic" in2="blur" operator="over" />
-                </filter>
-              </defs>
-
-              <rect width="1000" height="500" fill="url(#oceanGlow)" />
-
-              {/* LÍNEAS DE COORDENADAS */}
-              <line x1="0" y1="250" x2="1000" y2="250" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="4 4" opacity="0.6" />
-              <line x1="0" y1="184.7" x2="1000" y2="184.7" stroke="#94a3b8" strokeWidth="0.5" strokeDasharray="2 4" opacity="0.3" />
-              <line x1="0" y1="315.3" x2="1000" y2="315.3" stroke="#94a3b8" strokeWidth="0.5" strokeDasharray="2 4" opacity="0.3" />
-              <line x1="0" y1="83.3" x2="1000" y2="83.3" stroke="#94a3b8" strokeWidth="0.4" strokeDasharray="2 4" opacity="0.2" />
-              <line x1="0" y1="416.7" x2="1000" y2="416.7" stroke="#94a3b8" strokeWidth="0.4" strokeDasharray="2 4" opacity="0.2" />
-
-              <line x1="500" y1="0" x2="500" y2="500" stroke="#38bdf8" strokeWidth="0.8" strokeDasharray="4 4" opacity="0.6" />
-              <line x1="166.7" y1="0" x2="166.7" y2="500" stroke="#94a3b8" strokeWidth="0.4" strokeDasharray="2 4" opacity="0.2" />
-              <line x1="333.3" y1="0" x2="333.3" y2="500" stroke="#94a3b8" strokeWidth="0.4" strokeDasharray="2 4" opacity="0.2" />
-              <line x1="666.7" y1="0" x2="666.7" y2="500" stroke="#94a3b8" strokeWidth="0.4" strokeDasharray="2 4" opacity="0.2" />
-              <line x1="833.3" y1="0" x2="833.3" y2="500" stroke="#94a3b8" strokeWidth="0.4" strokeDasharray="2 4" opacity="0.2" />
-
-              <text x="15" y="245" fill="#38bdf8" fontSize="9" opacity="0.7" fontFamily="monospace">ECUADOR 0°</text>
-              <text x="505" y="20" fill="#38bdf8" fontSize="9" opacity="0.7" fontFamily="monospace">GREENWICH 0°</text>
-
-              {/* SILUETAS CONTINENTALES */}
-              <path
-                d="M140,75 L180,60 L240,65 L270,90 L265,130 L220,165 L215,190 L240,210 L225,230 L200,215 L180,180 L160,170 L130,135 L120,95 Z"
-                fill="#1e3a5f"
-                stroke="#38bdf8"
-                strokeWidth="1.2"
-                opacity="0.75"
-              />
-              <path
-                d="M215,225 L235,235 L260,245 L255,255 L230,245 Z"
-                fill="#1e3a5f"
-                stroke="#38bdf8"
-                strokeWidth="1"
-                opacity="0.75"
-              />
-              <path
-                d="M260,255 L310,265 L360,290 L345,340 L310,410 L280,450 L275,410 L270,330 L250,280 Z"
-                fill="#1e3a5f"
-                stroke="#38bdf8"
-                strokeWidth="1.2"
-                opacity="0.8"
-              />
-              <path
-                d="M470,90 L530,85 L560,110 L545,145 L510,155 L475,150 L465,120 Z"
-                fill="#1e3a5f"
-                stroke="#38bdf8"
-                strokeWidth="1.2"
-                opacity="0.8"
-              />
-              <path
-                d="M475,165 L545,160 L585,210 L580,270 L540,365 L510,380 L480,330 L455,240 L460,180 Z"
-                fill="#1e3a5f"
-                stroke="#38bdf8"
-                strokeWidth="1.2"
-                opacity="0.8"
-              />
-              <path
-                d="M560,95 L680,80 L800,90 L850,130 L840,190 L790,240 L720,260 L650,240 L600,200 L560,150 Z"
-                fill="#1e3a5f"
-                stroke="#38bdf8"
-                strokeWidth="1.2"
-                opacity="0.75"
-              />
-              <path
-                d="M790,320 L865,310 L880,360 L835,400 L775,370 Z"
-                fill="#1e3a5f"
-                stroke="#38bdf8"
-                strokeWidth="1.2"
-                opacity="0.8"
-              />
-
-              {/* PIN CÓSMICO */}
-              <g transform={`translate(${markerX}, ${markerY})`} filter="url(#glowPin)">
-                <circle r="14" fill="none" stroke="#38bdf8" strokeWidth="1.5" opacity="0.6" className="animate-ping" />
-                <circle r="8" fill="none" stroke="#fcd34d" strokeWidth="1.5" opacity="0.8" />
-                <circle r="4" fill="#38bdf8" />
-                <circle r="2" fill="#ffffff" />
-                <line x1="-10" y1="0" x2="10" y2="0" stroke="#38bdf8" strokeWidth="1" opacity="0.7" />
-                <line x1="0" y1="-10" x2="0" y2="10" stroke="#38bdf8" strokeWidth="1" opacity="0.7" />
-              </g>
-            </svg>
-
-            <div className="absolute bottom-3 left-3 bg-surface-100/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-astral-cyan/30 text-[11px] text-white flex items-center gap-2 shadow-lg">
-              <span className="text-astral-cyan font-serif">✦</span>
-              <span>
-                <strong className="text-astral-cyan">{city || 'Punto Seleccionado'}</strong> ({country || ''})
-              </span>
-              <span className="text-slate-400 font-mono">
-                [{lat.toFixed(2)}°, {lng.toFixed(2)}°]
-              </span>
-            </div>
+              🗺️ Mapa
+            </button>
+            <button
+              type="button"
+              onClick={() => handleToggleMapType('satellite')}
+              className={`px-3 py-1.5 font-medium transition ${
+                mapType === 'satellite'
+                  ? 'bg-[#1a73e8] text-white shadow-sm'
+                  : 'bg-white text-slate-700 hover:bg-slate-100'
+              }`}
+            >
+              🛰️ Satélite
+            </button>
           </div>
 
-          {/* CHIPS DE CIUDADES */}
-          <div className="space-y-1.5">
-            <span className="text-xs text-slate-300 font-serif">
-              Ciudades de Acceso Rápido:
-            </span>
-            <div className="flex flex-wrap gap-1.5">
-              {QUICK_CITIES.map((c) => {
-                const isSelected = Math.abs(lat - c.lat) < 0.1 && Math.abs(lng - c.lng) < 0.1;
-                return (
-                  <button
-                    key={c.name}
-                    type="button"
-                    onClick={() =>
-                      handleSelectPopularCity({
-                        name: c.name,
-                        city: c.name,
-                        country: c.country,
-                        latitude: c.lat,
-                        longitude: c.lng,
-                        timezoneIana: c.tz,
-                        formattedAddress: `${c.name}, ${c.country}`,
-                      })
-                    }
-                    className={`text-xs px-2.5 py-1 rounded-xl transition border flex items-center gap-1 ${
-                      isSelected
-                        ? 'bg-astral-cyan/20 border-astral-cyan text-white shadow-sm'
-                        : 'bg-surface-200/50 hover:bg-surface-200 text-slate-300 hover:text-white border-white/5'
-                    }`}
-                  >
-                    <span>📍</span>
-                    <span>{c.name}</span>
-                    <span className="text-[10px] text-slate-400">({c.country})</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* CAMPOS MANUALES */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-4 rounded-2xl bg-surface-200/40 border border-white/5">
+          {/* Tarjeta flotante con coordenadas y ubicación activa */}
+          <div className="absolute bottom-4 left-4 z-[400] bg-slate-950/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-astral-cyan/30 text-xs text-white shadow-xl flex items-center gap-3">
+            <div className="w-3 h-3 rounded-full bg-rose-500 animate-pulse"></div>
             <div>
-              <label className="block text-[11px] text-slate-400 mb-1">Ciudad o Lugar</label>
+              <div className="font-medium text-white">
+                <span className="text-astral-cyan">{city || 'Punto Seleccionado'}</span>
+                {country ? `, ${country}` : ''}
+              </div>
+              <div className="text-[11px] text-slate-400 font-mono flex items-center gap-2">
+                <span>Lat: {lat.toFixed(4)}°</span>
+                <span>Long: {lng.toFixed(4)}°</span>
+                <span className="text-sky-300">TZ: {timezoneIana}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Chips de Ciudades Rápidas y Campos de Edición */}
+        <div className="p-4 bg-surface-50/90 border-t border-white/10 space-y-3">
+          {/* Chips */}
+          <div className="flex flex-wrap items-center gap-1.5">
+            <span className="text-[11px] text-slate-400 font-serif mr-1">
+              Volar a:
+            </span>
+            {QUICK_CITIES.map((c) => {
+              const isSelected = Math.abs(lat - c.lat) < 0.1 && Math.abs(lng - c.lng) < 0.1;
+              return (
+                <button
+                  key={c.name}
+                  type="button"
+                  onClick={() => handleFlyToLocation(c.lat, c.lng, c.name, c.country, c.tz)}
+                  className={`text-[11px] px-2.5 py-1 rounded-xl transition border flex items-center gap-1 ${
+                    isSelected
+                      ? 'bg-astral-cyan/25 border-astral-cyan text-white font-medium shadow-sm'
+                      : 'bg-surface-200/60 hover:bg-surface-200 text-slate-300 hover:text-white border-white/5'
+                  }`}
+                >
+                  <span>📍</span>
+                  <span>{c.name}</span>
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Campos manuales y Botón de confirmación */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
+            <div className="flex flex-wrap gap-2 text-xs flex-1">
               <input
                 type="text"
                 value={city}
                 onChange={(e) => setCity(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-xl bg-surface-100 border border-white/10 text-white text-xs focus:outline-none focus:border-astral-cyan"
-                placeholder="Ej: Trujillo"
+                placeholder="Ciudad"
+                className="px-3 py-1.5 rounded-xl bg-surface-200 border border-white/10 text-white text-xs w-32 focus:outline-none focus:border-astral-cyan"
               />
-            </div>
-            <div>
-              <label className="block text-[11px] text-slate-400 mb-1">País</label>
               <input
                 type="text"
                 value={country}
                 onChange={(e) => setCountry(e.target.value)}
-                className="w-full px-3 py-1.5 rounded-xl bg-surface-100 border border-white/10 text-white text-xs focus:outline-none focus:border-astral-cyan"
-                placeholder="Ej: Perú"
+                placeholder="País"
+                className="px-3 py-1.5 rounded-xl bg-surface-200 border border-white/10 text-white text-xs w-28 focus:outline-none focus:border-astral-cyan"
               />
+              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-200 border border-white/10 text-[11px] text-slate-300 font-mono">
+                <span>Lat: {lat.toFixed(4)}</span>
+                <span>·</span>
+                <span>Lng: {lng.toFixed(4)}</span>
+              </div>
             </div>
-            <div>
-              <label className="block text-[11px] text-slate-400 mb-1">
-                Latitud (-90 a 90)
-              </label>
-              <input
-                type="number"
-                step="0.0001"
-                min="-90"
-                max="90"
-                value={lat}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value) || 0;
-                  setLat(val);
-                  updateTimezone(val, lng);
-                }}
-                className="w-full px-3 py-1.5 rounded-xl bg-surface-100 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-astral-cyan"
-              />
-            </div>
-            <div>
-              <label className="block text-[11px] text-slate-400 mb-1">
-                Longitud (-180 a 180)
-              </label>
-              <input
-                type="number"
-                step="0.0001"
-                min="-180"
-                max="180"
-                value={lng}
-                onChange={(e) => {
-                  const val = parseFloat(e.target.value) || 0;
-                  setLng(val);
-                  updateTimezone(lat, val);
-                }}
-                className="w-full px-3 py-1.5 rounded-xl bg-surface-100 border border-white/10 text-white text-xs font-mono focus:outline-none focus:border-astral-cyan"
-              />
+
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 rounded-xl bg-surface-200 hover:bg-surface-300 text-slate-300 text-xs transition"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                onClick={handleConfirm}
+                className="px-5 py-2 rounded-xl bg-gradient-to-r from-astral-cyan via-astral-azure to-astral-sapphire text-slate-950 font-serif font-medium text-xs shadow-lg shadow-astral-cyan/20 hover:opacity-90 transition flex items-center gap-1.5"
+              >
+                <span>✦</span>
+                <span>Fijar Ubicación</span>
+              </button>
             </div>
           </div>
-
-          <div className="flex items-center justify-between text-xs px-2 text-slate-400">
-            <span>
-              Zona Horaria IANA: <strong className="text-astral-cyan font-mono">{timezoneIana}</strong>{' '}
-              {isLoadingTz && <span className="animate-pulse">(detectando...)</span>}
-            </span>
-            <span className="text-[11px] text-slate-500">
-              Precisión astrológica para casas y ascendente
-            </span>
-          </div>
-        </div>
-
-        {/* Pie de Modal */}
-        <div className="px-6 py-4 border-t border-white/10 bg-surface-50/80 flex items-center justify-end gap-3">
-          <button
-            type="button"
-            onClick={onClose}
-            className="px-5 py-2 rounded-xl bg-surface-200/60 hover:bg-surface-200 text-slate-300 text-xs transition"
-          >
-            Cancelar
-          </button>
-          <button
-            type="button"
-            onClick={handleConfirm}
-            className="px-6 py-2 rounded-xl bg-gradient-to-r from-astral-cyan via-astral-azure to-astral-sapphire text-slate-950 font-serif font-medium text-xs shadow-lg shadow-astral-cyan/20 hover:opacity-90 transition flex items-center gap-2"
-          >
-            <span>✦</span>
-            <span>Aplicar Ubicación y Coordenadas</span>
-          </button>
         </div>
       </div>
     </div>

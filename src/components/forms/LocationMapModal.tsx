@@ -283,6 +283,7 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
     { name: 'Buenos Aires', country: 'Argentina', lat: -34.6037, lng: -58.3816, tz: 'America/Argentina/Buenos_Aires' },
     { name: 'Santiago', country: 'Chile', lat: -33.4489, lng: -70.6693, tz: 'America/Santiago' },
     { name: 'CDMX', country: 'México', lat: 19.4326, lng: -99.1332, tz: 'America/Mexico_City' },
+    { name: 'Londres', country: 'Reino Unido', lat: 51.5074, lng: -0.1278, tz: 'Europe/London' },
     { name: 'Madrid', country: 'España', lat: 40.4168, lng: -3.7038, tz: 'Europe/Madrid' },
     { name: 'Barcelona', country: 'España', lat: 41.3874, lng: 2.1686, tz: 'Europe/Madrid' },
     { name: 'Miami', country: 'EE.UU.', lat: 25.7617, lng: -80.1918, tz: 'America/New_York' },

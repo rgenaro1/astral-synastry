@@ -35,17 +35,17 @@ export default function Home() {
   // Datos predeterminados para la Rueda Interactiva de Demostración en Vivo
   const defaultPreviewData = useMemo(() => {
     const pA = {
-      name: 'Elena (Sol en Tauro)',
+      name: 'Oliver Davies',
       birthDate: '1993-05-14',
       birthTime: '14:30',
-      city: 'Trujillo',
-      country: 'Perú',
-      latitude: -8.1116,
-      longitude: -79.0286,
-      timezoneIana: 'America/Lima',
+      city: 'Londres',
+      country: 'Reino Unido',
+      latitude: 51.5074,
+      longitude: -0.1278,
+      timezoneIana: 'Europe/London',
     };
     const pB = {
-      name: 'Mateo (Sol en Escorpio)',
+      name: 'Elena Ramos',
       birthDate: '1991-10-28',
       birthTime: '09:15',
       city: 'Madrid',
@@ -239,14 +239,14 @@ export default function Home() {
                 <AstroWheel
                   chart={defaultPreviewData.chartA}
                   secondChart={defaultPreviewData.chartB}
-                  title="Sinastría Bi-Wheel: Elena Ramos (Interior) & Mateo Silva (Exterior)"
+                  title="Sinastría Bi-Wheel: Oliver Davies (Interior) & Elena Ramos (Exterior)"
                 />
               )}
               {previewTab === 'chartA' && (
-                <AstroWheel chart={defaultPreviewData.chartA} title="Carta Natal · Elena Ramos" />
+                <AstroWheel chart={defaultPreviewData.chartA} title="Carta Natal · Oliver Davies" />
               )}
               {previewTab === 'chartB' && (
-                <AstroWheel chart={defaultPreviewData.chartB} title="Carta Natal · Mateo Silva" />
+                <AstroWheel chart={defaultPreviewData.chartB} title="Carta Natal · Elena Ramos" />
               )}
               {previewTab === 'composite' && (
                 <AstroWheel
@@ -261,7 +261,7 @@ export default function Home() {
                     modalities: defaultPreviewData.chartA.modalities,
                     calculatedAt: new Date().toISOString(),
                   }}
-                  title="Carta Compuesta · Elena & Mateo"
+                  title="Carta Compuesta · Oliver & Elena"
                 />
               )}
             </div>

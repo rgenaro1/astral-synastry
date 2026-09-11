@@ -27,6 +27,30 @@ interface PlaceSuggestion {
 
 const PRESET_COUPLES = [
   {
+    title: 'Oliver & Elena (Londres & Madrid)',
+    description: 'Sincronía anglo-hispana, profundidad mental y calidez mediterránea.',
+    personA: {
+      name: 'Oliver Davies',
+      birthDate: '1993-05-14',
+      birthTime: '14:30',
+      city: 'Londres',
+      country: 'Reino Unido',
+      latitude: 51.5074,
+      longitude: -0.1278,
+      timezoneIana: 'Europe/London',
+    },
+    personB: {
+      name: 'Elena Ramos',
+      birthDate: '1991-10-28',
+      birthTime: '09:15',
+      city: 'Madrid',
+      country: 'España',
+      latitude: 40.4168,
+      longitude: -3.7038,
+      timezoneIana: 'Europe/Madrid',
+    },
+  },
+  {
     title: 'Frida Kahlo & Diego Rivera',
     description: 'Amor alquímico, pasión volcánica y contratos de arte sagrado.',
     personA: {
@@ -105,18 +129,18 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
   isLoading,
 }) => {
   const [personA, setPersonA] = useState<BirthProfileInput>({
-    name: 'Elena Ramos',
+    name: 'Oliver Davies',
     birthDate: '1993-05-14',
     birthTime: '14:30',
-    city: 'Trujillo',
-    country: 'Perú',
-    latitude: -8.1116,
-    longitude: -79.0286,
-    timezoneIana: 'America/Lima',
+    city: 'Londres',
+    country: 'Reino Unido',
+    latitude: 51.5074,
+    longitude: -0.1278,
+    timezoneIana: 'Europe/London',
   });
 
   const [personB, setPersonB] = useState<BirthProfileInput>({
-    name: 'Mateo Silva',
+    name: 'Elena Ramos',
     birthDate: '1991-10-28',
     birthTime: '09:15',
     city: 'Madrid',
@@ -418,7 +442,7 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
               value={personA.name}
               onChange={(e) => setPersonA({ ...personA, name: e.target.value })}
               className="w-full px-4 py-2.5 rounded-2xl bg-surface-100/80 border border-white/10 text-white text-sm focus:outline-none focus:border-astral-cyan/70 transition shadow-inner"
-              placeholder="Ej: Elena"
+              placeholder="Ej: Oliver"
             />
           </div>
 
@@ -485,7 +509,7 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
                   }}
                   onFocus={() => suggestionsA.length > 0 && setShowSugA(true)}
                   className="w-full px-4 py-2.5 rounded-2xl bg-surface-100/50 backdrop-blur-md border border-white/10 text-white text-sm focus:outline-none focus:border-astral-cyan/70 transition"
-                  placeholder="Escribe tu ciudad (ej: Trujillo, Lima, Madrid)..."
+                  placeholder="Escribe tu ciudad (ej: Londres, Madrid, Lima)..."
                 />
                 {isSearchingA && (
                   <span className="absolute right-3.5 top-3 text-[11px] text-astral-cyan animate-pulse font-mono">
@@ -562,7 +586,7 @@ export const DualBirthForm: React.FC<DualBirthFormProps> = ({
               value={personB.name}
               onChange={(e) => setPersonB({ ...personB, name: e.target.value })}
               className="w-full px-4 py-2.5 rounded-2xl bg-surface-100/50 backdrop-blur-md border border-white/10 text-white text-sm focus:outline-none focus:border-astral-azure/70 transition shadow-inner"
-              placeholder="Ej: Mateo"
+              placeholder="Ej: Elena"
             />
           </div>
 

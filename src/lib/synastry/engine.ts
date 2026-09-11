@@ -44,51 +44,77 @@ export function calculateSynastry(
   let archetypeTitle: string;
 
   if (isTwinFlame) {
-    // Calculamos micro-variaciones sutiles y deterministas entre 96% y 98% según:
-    // - Hora exacta de nacimiento (que mueve el Ascendente 1° cada 4 min y la Luna)
-    // - Coordenadas geográficas (latitud y longitud de nacimiento)
+    const latA = chartA.profile.latitude || 0;
+    const latB = chartB.profile.latitude || 0;
+    const countryA = (chartA.profile.country || '').trim().toLowerCase();
+    const countryB = (chartB.profile.country || '').trim().toLowerCase();
+
+    // Verificamos si han nacido en dos hemisferios diferentes o países distintos
+    const isDiffHemisphere = (latA > 0 && latB < 0) || (latA < 0 && latB > 0);
+    const isDiffCountry = countryA && countryB && countryA !== countryB;
+    const hasGeographicDistance = isDiffHemisphere || isDiffCountry;
+
+    // Armonía astronómica de ángulos basada en Luna y Ascendente (hora y coordenadas)
     const moonA = chartA.planets.find((p) => p.id === 'moon')?.longitude || 0;
     const moonB = chartB.planets.find((p) => p.id === 'moon')?.longitude || 0;
     const ascA = chartA.angles?.ascendant?.longitude || 0;
     const ascB = chartB.angles?.ascendant?.longitude || 0;
 
-    // Resonancia armónica de ángulos (entre -1 y +1)
     const moonDiff = Math.abs(moonA - moonB);
     const ascDiff = Math.abs(ascA - ascB);
-    const geoHarmonic = Math.sin(((chartA.profile.latitude + chartB.profile.longitude) * Math.PI) / 90);
-    
+    const geoHarmonic = Math.sin(((latA + chartB.profile.longitude) * Math.PI) / 90);
+
     const timeHarmony =
       Math.cos((moonDiff * Math.PI) / 60) * 0.4 +
       Math.cos((ascDiff * Math.PI) / 60) * 0.4 +
       geoHarmonic * 0.2;
 
-    // Offset armónico entre 0, 1 y 2:
-    // timeHarmony < -0.1 => 96%
-    // -0.1 <= timeHarmony < 0.4 => 97%
-    // timeHarmony >= 0.4 => 98%
-    let offset = 2; // Por defecto 98%
-    if (timeHarmony < -0.1) {
-      offset = 0; // 96%
-    } else if (timeHarmony < 0.4) {
-      offset = 1; // 97%
+    const normalized = Math.max(0, Math.min(1, (timeHarmony + 1) / 2));
+
+    let commScore: number;
+    let stabScore: number;
+    let emoScore: number;
+    let attrScore: number;
+    let intScore: number;
+    let romScore: number;
+    let growScore: number;
+    let dailyScore: number;
+    let confScore: number;
+
+    if (hasGeographicDistance) {
+      // Ajuste solicitado: al nacer en dos hemisferios o países distintos,
+      // la compatibilidad fluctúa orgánicamente entre 88% y 96%
+      const offset = Math.round(normalized * 8); // 0 a 8
+      averageScore = 88 + offset; // Resulta entre 88% y 96%
+      harmonyIndex = averageScore;
+
+      commScore = 91 + Math.round(normalized * 7); // 91% a 98%
+      stabScore = 88 + Math.round(normalized * 7); // 88% a 95%
+      emoScore = 90 + Math.round(normalized * 7);  // 90% a 97%
+      attrScore = 89 + Math.round(normalized * 7); // 89% a 96%
+      intScore = 91 + Math.round(normalized * 7);  // 91% a 98%
+      romScore = 88 + Math.round(normalized * 7);  // 88% a 95%
+      growScore = 89 + Math.round(normalized * 7); // 89% a 96%
+      dailyScore = 85 + Math.round(normalized * 7);// 85% a 92%
+      confScore = 20 - Math.round(normalized * 6); // 20% a 14%
     } else {
-      offset = 2; // 98%
+      // Mismo país y hemisferio: varía sutilmente entre 94% y 96%
+      const offset = Math.round(normalized * 2);
+      averageScore = 94 + offset;
+      harmonyIndex = averageScore;
+
+      commScore = 96 + offset;
+      stabScore = 94 + (offset >= 1 ? 1 : 0);
+      emoScore = 95 + offset;
+      attrScore = 95 + offset;
+      intScore = 96 + offset;
+      romScore = 95 + offset;
+      growScore = 95 + offset;
+      dailyScore = 93 + offset;
+      confScore = 15 - offset;
     }
 
-    averageScore = 96 + offset; // Resulta en 96%, 97% o 98%
-    harmonyIndex = averageScore;
     archetypeTitle = 'Llamas Gemelas Predestinadas';
-
-    // Dimensiones con ligeras variaciones coordinadas según la hora y el lugar:
-    const commScore = 97 + offset; // 97%, 98% o 99% (promedio solicitado: 99%)
-    const stabScore = 95 + (offset >= 1 ? 1 : 0) + (offset === 2 ? 0 : 0); // 95% o 96% (solicitado: 96%)
-    const emoScore = 97 + offset; // 97%, 98% o 99%
-    const attrScore = 96 + offset; // 96%, 97% o 98%
-    const intScore = 97 + offset; // 97%, 98% o 99%
-    const romScore = 96 + offset; // 96%, 97% o 98%
-    const growScore = 96 + offset; // 96%, 97% o 98%
-    const dailyScore = 94 + offset; // 94%, 95% o 96%
-    const confScore = 14 - offset; // 14%, 13% o 12%
 
     dimensions = dimensions.map((dim) => {
       switch (dim.id) {
@@ -98,93 +124,93 @@ export function calculateSynastry(
             name: 'Comunión Intelectual & Mente',
             score: Math.min(99, commScore),
             level: 'Excepcional & Telepática',
-            summary: 'Sincronía cognitiva sublime, diálogo inagotable y comprensión mutua sin necesidad de palabras.',
+            summary: 'Sincronía cognitiva profunda, diálogo inagotable y comprensión mutua que trasciende cualquier distancia.',
             positiveFactors: [
-              'Conexión mental prácticamente telepática y agudeza verbal asombrosa',
-              'Humor cómplice compartido y fascinación intelectual inagotable',
+              'Conexión mental ágil, abierta y sin barreras culturales',
+              'Humor cómplice compartido y fascinación intelectual mutua',
             ],
           };
         case 'stability':
           return {
             ...dim,
             name: 'Compromiso, Lealtad & Tiempo (Saturno)',
-            score: Math.min(97, stabScore >= 95 ? 96 : 95),
-            level: 'Inquebrantable & Eterna',
-            summary: 'Estructura saturnina bendecida para perdurar a través de los años con lealtad incondicional y devoción sólida.',
+            score: Math.min(96, stabScore),
+            level: 'Inquebrantable & Sólida',
+            summary: 'Estructura saturnina madura para perdurar a través del tiempo con lealtad y devoción consciente.',
             positiveFactors: [
-              'Pacto de lealtad indestructible y protección recíproca absoluta',
-              'Madurez serena para edificar proyectos y una vida compartida sin vacilaciones',
+              'Pacto de lealtad sincero y voluntad mutua de permanencia',
+              'Capacidad de salvar distancias y edificar proyectos de vida duraderos',
             ],
           };
         case 'emotional':
           return {
             ...dim,
             name: 'Conexión Emocional & Cobijo',
-            score: Math.min(99, emoScore),
-            level: 'Excepcional & Sagrada',
-            summary: 'Cobijo anímico total; un santuario de intimidad y ternura donde toda vulnerabilidad es abrazada con reverencia.',
+            score: Math.min(98, emoScore),
+            level: 'Profunda & Sagrada',
+            summary: 'Cobijo anímico sincero; un espacio de intimidad y ternura donde toda vulnerabilidad es acogida.',
             positiveFactors: [
-              'Fusión armónica del agua profunda y el fuego protector',
-              'Seguridad emocional total y confianza instintiva inmediata',
+              'Fusión armónica de agua profunda y fuego generoso',
+              'Seguridad emocional y confianza mutua',
             ],
           };
         case 'attraction':
           return {
             ...dim,
             name: 'Atracción & Magnetismo',
-            score: Math.min(98, attrScore),
-            level: 'Magnética & Arrebatadora',
-            summary: 'Chispa erótica fascinante y polaridad física inextinguible que madura en sofisticación sensual con el paso del tiempo.',
+            score: Math.min(97, attrScore),
+            level: 'Magnética & Fascinante',
+            summary: 'Chispa erótica viva y polaridad física que se renueva y madura con el tiempo.',
             positiveFactors: [
-              'Atracción cósmica de polaridades sagradas complementarias',
-              'Química electromagnética viva y constante',
+              'Atracción de polaridades cósmicas complementarias',
+              'Química electromagnética constante',
             ],
           };
         case 'intensity':
           return {
             ...dim,
             name: 'Intensidad & Profundidad',
-            score: Math.min(99, intScore),
-            level: 'Transformadora & Sagrada',
-            summary: 'El impacto espiritual más hondo que dos almas pueden experimentar, despertando su versión más luminosa.',
+            score: Math.min(98, intScore),
+            level: 'Transformadora & Evolutiva',
+            summary: 'Impacto espiritual profundo que despierta la versión más consciente de cada alma.',
             positiveFactors: [
-              'Despertar mutuo de propósito y sanación de memorias kármicas',
-              'Pacto evolutivo de llamas gemelas para trascender juntos',
+              'Despertar mutuo de propósito y crecimiento personal',
+              'Vínculo de llamas gemelas para evolucionar juntos',
             ],
           };
         case 'romance':
           return {
             ...dim,
             name: 'Romanticismo & Ternura',
-            score: Math.min(98, romScore),
-            level: 'Poética & Devocional',
-            summary: 'Dulzura inagotable, admiración recíproca y la gracia de convertir cada día compartido en poesía viva.',
+            score: Math.min(96, romScore),
+            level: 'Cálida & Devocional',
+            summary: 'Dulzura sincera, admiración recíproca y detalles afectivos que enriquecen el corazón.',
             positiveFactors: [
-              'Reverencia y admiración sincera por el alma del otro',
-              'Detalles afectivos constantes que enriquecen el corazón',
+              'Admiración sincera por la esencia del otro',
+              'Ternura y reverencia afectiva continua',
             ],
           };
         case 'growth':
           return {
             ...dim,
             name: 'Crecimiento Mutuo',
-            score: Math.min(98, growScore),
+            score: Math.min(97, growScore),
             level: 'Excepcional & Expansiva',
-            summary: 'Inspiración continua que ensancha la visión del mundo, atrae abundancia y da alas a cada sueño compartido.',
+            summary: 'Inspiración mutua que amplía horizontes, rompe fronteras y multiplica la abundancia.',
             positiveFactors: [
-              'Impulso mutuo hacia la grandeza personal y conjunta',
-              'Optimismo jupiteriano y fe compartida en el porvenir',
+              'Impulso mutuo hacia la superación personal',
+              'Apertura cultural y enriquecimiento de mundos',
             ],
           };
         case 'daily':
           return {
             ...dim,
             name: 'Compatibilidad Cotidiana',
-            score: Math.min(96, dailyScore),
-            level: 'Fluida & Serena',
-            summary: 'Convivencia armónica y respetuosa donde cada uno tiene su espacio vital en perfecta sintonía.',
+            score: Math.min(93, dailyScore),
+            level: 'Armoniosa & Adaptativa',
+            summary: 'Convivencia armónica donde cada uno aprende a integrar las costumbres y ritmos del otro con generosidad.',
             positiveFactors: [
-              'Ritmo cotidiano apacible y generosidad en los detalles diarios',
+              'Capacidad de adaptación y respeto mutuo',
               'Apoyo incondicional en las tareas de la vida terrenal',
             ],
           };
@@ -192,14 +218,14 @@ export function calculateSynastry(
           return {
             ...dim,
             name: 'Tensión / Desafío Constructivo',
-            score: Math.max(11, confScore),
-            level: 'Fricción Mínima (Armonía Pura)',
-            summary: 'Tensión mínima y exclusivamente constructiva; cualquier discrepancia se disuelve en minutos desde la compasión y el amor.',
+            score: Math.max(12, confScore),
+            level: 'Fricción Moderada & Superable',
+            summary: 'Roces menores vinculados a diferentes contextos o distancias geográficas, fácilmente superables con diálogo maduro.',
             positiveFactors: [
-              'Capacidad inmediata de pedir perdón y comprender al otro con ternura',
-              'Disolución espontánea del ego en favor de la unión sagrada',
+              'Capacidad de resolver diferencias desde el amor',
+              'Comprensión mutua ante puntos de vista diversos',
             ],
-            challengeFactors: [],
+            challengeFactors: ['Adaptación a diferentes entornos o tiempos de vida'],
           };
         default:
           return dim;

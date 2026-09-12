@@ -95,10 +95,13 @@ export const ReportView: React.FC<ReportViewProps> = ({
               </div>
             </div>
             <button
-              onClick={onReset}
-              className="ml-2 text-xs px-3.5 py-2.5 rounded-xl bg-surface-100 hover:bg-surface-300 text-slate-200 hover:text-white border border-white/5 transition font-serif"
+              onClick={() => {
+                onReset();
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+              }}
+              className="ml-2 text-xs px-4 py-2.5 rounded-xl bg-astral-cyan/20 hover:bg-astral-cyan/30 text-astral-cyan border border-astral-cyan/40 transition font-serif flex items-center gap-1.5 shadow-sm font-medium cursor-pointer"
             >
-              Nuevo Análisis
+              <span>←</span> Nueva Consulta
             </button>
           </div>
         </div>
@@ -740,6 +743,22 @@ export const ReportView: React.FC<ReportViewProps> = ({
 
         {/* PESTAÑA: CONSULTA CON IA */}
         {activeTab === 'chat' && <RelationshipChat digest={digest} />}
+      </div>
+
+      {/* BARRA DE ACCIÓN AL FINAL DEL REPORTE */}
+      <div className="pt-8 pb-14 text-center border-t border-white/5 space-y-3">
+        <p className="text-xs text-slate-400 font-light">
+          ¿Deseas consultar la compatibilidad con otra persona o fecha?
+        </p>
+        <button
+          onClick={() => {
+            onReset();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }}
+          className="inline-flex items-center gap-2 px-8 py-4 rounded-2xl bg-gradient-to-r from-astral-cyan via-astral-azure to-astral-sapphire text-slate-950 font-serif font-bold text-sm sm:text-base shadow-xl shadow-astral-cyan/25 hover:scale-[1.02] active:scale-[0.98] transition cursor-pointer"
+        >
+          <span>✦</span> Realizar Otra Consulta / Volver al Inicio
+        </button>
       </div>
     </div>
   );

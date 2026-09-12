@@ -131,12 +131,19 @@ export default function Home() {
       {/* BARRA SUPERIOR EDITORIAL */}
       <header className="w-full border-b border-astral-roseGold/15 bg-surface-50/40 backdrop-blur-xl sticky top-0 z-40">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-20 flex items-center justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-astral-cyan via-astral-azure to-astral-sapphire flex items-center justify-center text-slate-950 font-serif font-bold text-xl shadow-lg shadow-astral-cyan/25">
+          <div
+            onClick={() => {
+              setResult(null);
+              window.scrollTo({ top: 0, behavior: 'smooth' });
+            }}
+            className="flex items-center gap-3.5 cursor-pointer group select-none"
+            title="Volver al inicio / Nueva consulta"
+          >
+            <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-astral-cyan via-astral-azure to-astral-sapphire flex items-center justify-center text-slate-950 font-serif font-bold text-xl shadow-lg shadow-astral-cyan/25 group-hover:scale-105 transition">
               ✦
             </div>
             <div>
-              <span className="font-serif tracking-widest text-xl text-white font-normal block">
+              <span className="font-serif tracking-widest text-xl text-white font-normal block group-hover:text-astral-cyan transition">
                 ASTRAL
               </span>
               <span className="text-[10px] text-astral-cyan font-mono block -mt-1 tracking-widest uppercase">
@@ -146,13 +153,25 @@ export default function Home() {
           </div>
 
           <div className="flex items-center gap-3">
-            <button
-              onClick={handleLoadCelebrityDemo}
-              disabled={isLoading}
-              className="text-xs px-4 py-2 rounded-xl bg-surface-100/60 hover:bg-surface-200/80 text-astral-cyan border border-astral-cyan/30 transition flex items-center gap-1.5 shadow-sm backdrop-blur-md"
-            >
-              <span>✦</span> Ver Ejemplo en Vivo (Frida & Diego)
-            </button>
+            {result ? (
+              <button
+                onClick={() => {
+                  setResult(null);
+                  window.scrollTo({ top: 0, behavior: 'smooth' });
+                }}
+                className="text-xs px-4 py-2 rounded-xl bg-astral-cyan/20 hover:bg-astral-cyan/30 text-astral-cyan border border-astral-cyan/40 transition flex items-center gap-1.5 shadow-md backdrop-blur-md font-medium cursor-pointer"
+              >
+                <span>←</span> Nueva Consulta
+              </button>
+            ) : (
+              <button
+                onClick={handleLoadCelebrityDemo}
+                disabled={isLoading}
+                className="text-xs px-4 py-2 rounded-xl bg-surface-100/60 hover:bg-surface-200/80 text-astral-cyan border border-astral-cyan/30 transition flex items-center gap-1.5 shadow-sm backdrop-blur-md"
+              >
+                <span>✦</span> Ver Ejemplo en Vivo (Frida & Diego)
+              </button>
+            )}
           </div>
         </div>
       </header>

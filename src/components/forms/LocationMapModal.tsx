@@ -187,7 +187,19 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
       // Asegurar redibujado correcto de tiles
       setTimeout(() => {
         map.invalidateSize();
-      }, 250);
+      }, 100);
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 300);
+
+      if (typeof ResizeObserver !== 'undefined' && mapContainerRef.current) {
+        const ro = new ResizeObserver(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        });
+        ro.observe(mapContainerRef.current);
+      }
     });
 
     return () => {
@@ -292,33 +304,44 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-950/85 backdrop-blur-md animate-fadeIn">
-      <div className="relative w-full max-w-5xl bg-surface-100/95 border border-astral-cyan/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[96vh]">
-        {/* Cabecera con Buscador estilo Google Maps */}
-        <div className="px-5 py-3.5 border-b border-white/10 flex flex-wrap items-center justify-between gap-3 bg-surface-50/80">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 font-serif text-sm">
+    <div className="fixed inset-0 z-50 flex flex-col sm:items-center sm:justify-center p-0 sm:p-4 bg-slate-950/90 backdrop-blur-md animate-fadeIn">
+      <div className="relative w-full h-full sm:h-[90vh] max-w-5xl bg-surface-100 border-0 sm:border border-astral-cyan/30 rounded-none sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+        {/* Cabecera compacta */}
+        <div className="px-4 py-2.5 sm:py-3.5 border-b border-white/10 flex items-center justify-between gap-3 bg-surface-50/90 flex-shrink-0">
+          <div className="flex items-center gap-2.5 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 font-serif text-sm flex-shrink-0">
               📍
             </div>
-            <div>
-              <h3 className="text-sm sm:text-base font-serif text-white font-medium">
+            <div className="min-w-0">
+              <h3 className="text-xs sm:text-base font-serif text-white font-medium truncate">
                 Selector de Ubicación Geográfica
               </h3>
-              <p className="text-[11px] text-slate-400 font-light">
-                Para <strong className="text-astral-cyan">{personName}</strong> · Haz clic o arrastra el pin en el mapa
+              <p className="text-[10px] sm:text-[11px] text-slate-400 font-light truncate">
+                Para <strong className="text-astral-cyan">{personName}</strong> · Toca o arrastra el pin
               </p>
             </div>
           </div>
 
-          {/* Buscador dentro del mapa */}
-          <div className="relative flex-1 max-w-sm">
+          <button
+            type="button"
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white flex items-center justify-center transition flex-shrink-0 cursor-pointer"
+            title="Cerrar"
+          >
+            ✕
+          </button>
+        </div>
+
+        {/* Buscador de ciudades */}
+        <div className="px-3 sm:px-4 py-2 bg-surface-50/80 border-b border-white/5 flex-shrink-0 relative z-30">
+          <div className="relative w-full">
             <input
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               onFocus={() => searchSuggestions.length > 0 && setShowSearchDropdown(true)}
-              placeholder="Buscar ciudad o dirección en Google Maps..."
-              className="w-full px-3.5 py-1.5 rounded-xl bg-surface-200/90 border border-white/15 text-white text-xs placeholder:text-slate-400 focus:outline-none focus:border-astral-cyan"
+              placeholder="🔍 Buscar ciudad o dirección en Google Maps..."
+              className="w-full px-3.5 py-1.5 sm:py-2 rounded-xl bg-surface-200/90 border border-white/15 text-white text-xs placeholder:text-slate-400 focus:outline-none focus:border-astral-cyan"
             />
             {isSearching && (
               <span className="absolute right-3 top-2 text-[10px] text-astral-cyan animate-pulse">
@@ -331,36 +354,28 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
                   <li
                     key={idx}
                     onClick={() => handleSelectSearchResult(s)}
-                    className="px-3 py-1.5 hover:bg-surface-200 cursor-pointer text-slate-200 hover:text-white transition flex flex-col"
+                    className="px-3 py-2 hover:bg-surface-200 cursor-pointer text-slate-200 hover:text-white transition flex flex-col border-b border-white/5 last:border-0"
                   >
                     <span className="font-medium text-astral-cyan">{s.city}</span>
-                    <span className="text-[10px] text-slate-400">{s.formattedAddress}</span>
+                    <span className="text-[10px] text-slate-400 truncate">{s.formattedAddress}</span>
                   </li>
                 ))}
               </ul>
             )}
           </div>
-
-          <button
-            type="button"
-            onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/5 hover:bg-white/10 text-slate-400 hover:text-white flex items-center justify-center transition"
-          >
-            ✕
-          </button>
         </div>
 
-        {/* CONTENEDOR DEL MAPA GOOGLE MAPS */}
-        <div className="relative w-full h-[400px] sm:h-[460px] bg-slate-900 select-none">
+        {/* CONTENEDOR DEL MAPA (Ocupa todo el espacio restante disponible) */}
+        <div className="relative w-full flex-1 min-h-[180px] bg-slate-900 select-none overflow-hidden">
           {/* Contenedor Leaflet */}
           <div ref={mapContainerRef} className="w-full h-full" />
 
           {/* Selector de Capa Estilo Google Maps (Callejero vs Satélite) */}
-          <div className="absolute top-3 right-3 z-[400] flex rounded-xl overflow-hidden border border-black/30 shadow-lg bg-white text-xs font-sans">
+          <div className="absolute top-2.5 right-2.5 z-[400] flex rounded-xl overflow-hidden border border-black/30 shadow-lg bg-white text-xs font-sans">
             <button
               type="button"
               onClick={() => handleToggleMapType('streets')}
-              className={`px-3 py-1.5 font-medium transition ${
+              className={`px-2.5 sm:px-3 py-1 font-medium text-[11px] sm:text-xs transition ${
                 mapType === 'streets'
                   ? 'bg-[#1a73e8] text-white shadow-sm'
                   : 'bg-white text-slate-700 hover:bg-slate-100'
@@ -371,7 +386,7 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
             <button
               type="button"
               onClick={() => handleToggleMapType('satellite')}
-              className={`px-3 py-1.5 font-medium transition ${
+              className={`px-2.5 sm:px-3 py-1 font-medium text-[11px] sm:text-xs transition ${
                 mapType === 'satellite'
                   ? 'bg-[#1a73e8] text-white shadow-sm'
                   : 'bg-white text-slate-700 hover:bg-slate-100'
@@ -382,90 +397,87 @@ export const LocationMapModal: React.FC<LocationMapModalProps> = ({
           </div>
 
           {/* Tarjeta flotante con coordenadas y ubicación activa */}
-          <div className="absolute bottom-4 left-4 z-[400] bg-slate-950/90 backdrop-blur-md px-3.5 py-2 rounded-2xl border border-astral-cyan/30 text-xs text-white shadow-xl flex items-center gap-3">
-            <div className="w-3 h-3 rounded-full bg-rose-500 animate-pulse"></div>
-            <div>
-              <div className="font-medium text-white">
+          <div className="absolute bottom-2.5 left-2.5 z-[400] max-w-[calc(100%-20px)] bg-slate-950/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-astral-cyan/30 text-xs text-white shadow-xl flex items-center gap-2.5 pointer-events-none">
+            <div className="w-2.5 h-2.5 rounded-full bg-rose-500 animate-pulse flex-shrink-0"></div>
+            <div className="min-w-0">
+              <div className="font-medium text-white truncate text-xs">
                 <span className="text-astral-cyan">{city || 'Punto Seleccionado'}</span>
                 {country ? `, ${country}` : ''}
               </div>
-              <div className="text-[11px] text-slate-400 font-mono flex items-center gap-2">
-                <span>Lat: {lat.toFixed(4)}°</span>
-                <span>Long: {lng.toFixed(4)}°</span>
-                <span className="text-sky-300">TZ: {timezoneIana}</span>
+              <div className="text-[10px] text-slate-400 font-mono flex items-center gap-2 truncate">
+                <span>{lat.toFixed(3)}°, {lng.toFixed(3)}°</span>
+                <span className="text-sky-300 hidden sm:inline truncate">{timezoneIana}</span>
               </div>
             </div>
           </div>
         </div>
 
-        {/* Chips de Ciudades Rápidas y Campos de Edición */}
-        <div className="p-4 bg-surface-50/90 border-t border-white/10 space-y-3">
-          {/* Chips */}
-          <div className="flex flex-wrap items-center gap-1.5">
-            <span className="text-[11px] text-slate-400 font-serif mr-1">
-              Volar a:
-            </span>
-            {QUICK_CITIES.map((c) => {
-              const isSelected = Math.abs(lat - c.lat) < 0.1 && Math.abs(lng - c.lng) < 0.1;
-              return (
-                <button
-                  key={c.name}
-                  type="button"
-                  onClick={() => handleFlyToLocation(c.lat, c.lng, c.name, c.country, c.tz)}
-                  className={`text-[11px] px-2.5 py-1 rounded-xl transition border flex items-center gap-1 ${
-                    isSelected
-                      ? 'bg-astral-cyan/25 border-astral-cyan text-white font-medium shadow-sm'
-                      : 'bg-surface-200/60 hover:bg-surface-200 text-slate-300 hover:text-white border-white/5'
-                  }`}
-                >
-                  <span>📍</span>
-                  <span>{c.name}</span>
-                </button>
-              );
-            })}
+        {/* Chips de Ciudades Rápidas en una sola fila desplazable horizontalmente */}
+        <div className="px-3 py-2 bg-surface-50/90 border-t border-white/5 flex items-center gap-1.5 overflow-x-auto no-scrollbar flex-shrink-0">
+          <span className="text-[10px] text-slate-400 font-serif whitespace-nowrap mr-1">
+            Volar a:
+          </span>
+          {QUICK_CITIES.map((c) => {
+            const isSelected = Math.abs(lat - c.lat) < 0.1 && Math.abs(lng - c.lng) < 0.1;
+            return (
+              <button
+                key={c.name}
+                type="button"
+                onClick={() => handleFlyToLocation(c.lat, c.lng, c.name, c.country, c.tz)}
+                className={`text-[11px] px-2.5 py-1 rounded-xl transition border flex items-center gap-1 whitespace-nowrap flex-shrink-0 ${
+                  isSelected
+                    ? 'bg-astral-cyan/25 border-astral-cyan text-white font-medium shadow-sm'
+                    : 'bg-surface-200/60 hover:bg-surface-200 text-slate-300 hover:text-white border-white/5'
+                }`}
+              >
+                <span>📍</span>
+                <span>{c.name}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* BARRA INFERIOR DE ACCIÓN (100% VISIBLE Y FIJADA AL FONDO) */}
+        <div className="p-3 sm:p-4 bg-surface-100/95 border-t border-white/10 flex-shrink-0 space-y-2.5 pb-[max(0.75rem,env(safe-area-inset-bottom))] shadow-2xl">
+          {/* Inputs de ciudad y país */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">
+            <input
+              type="text"
+              value={city}
+              onChange={(e) => setCity(e.target.value)}
+              placeholder="Ciudad"
+              className="px-3 py-1.5 rounded-xl bg-surface-200 border border-white/10 text-white text-xs focus:outline-none focus:border-astral-cyan"
+            />
+            <input
+              type="text"
+              value={country}
+              onChange={(e) => setCountry(e.target.value)}
+              placeholder="País"
+              className="px-3 py-1.5 rounded-xl bg-surface-200 border border-white/10 text-white text-xs focus:outline-none focus:border-astral-cyan"
+            />
+            <div className="col-span-2 sm:col-span-2 flex items-center justify-between px-3 py-1.5 rounded-xl bg-surface-200 border border-white/10 text-[11px] text-slate-300 font-mono">
+              <span>Coord: {lat.toFixed(4)}°, {lng.toFixed(4)}°</span>
+              <span className="text-sky-300 text-[10px]">{timezoneIana}</span>
+            </div>
           </div>
 
-          {/* Campos manuales y Botón de confirmación */}
-          <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-white/5">
-            <div className="flex flex-wrap gap-2 text-xs flex-1">
-              <input
-                type="text"
-                value={city}
-                onChange={(e) => setCity(e.target.value)}
-                placeholder="Ciudad"
-                className="px-3 py-1.5 rounded-xl bg-surface-200 border border-white/10 text-white text-xs w-32 focus:outline-none focus:border-astral-cyan"
-              />
-              <input
-                type="text"
-                value={country}
-                onChange={(e) => setCountry(e.target.value)}
-                placeholder="País"
-                className="px-3 py-1.5 rounded-xl bg-surface-200 border border-white/10 text-white text-xs w-28 focus:outline-none focus:border-astral-cyan"
-              />
-              <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-surface-200 border border-white/10 text-[11px] text-slate-300 font-mono">
-                <span>Lat: {lat.toFixed(4)}</span>
-                <span>·</span>
-                <span>Lng: {lng.toFixed(4)}</span>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-2">
-              <button
-                type="button"
-                onClick={onClose}
-                className="px-4 py-2 rounded-xl bg-surface-200 hover:bg-surface-300 text-slate-300 text-xs transition"
-              >
-                Cancelar
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirm}
-                className="px-5 py-2 rounded-xl bg-gradient-to-r from-astral-cyan via-astral-azure to-astral-sapphire text-slate-950 font-serif font-medium text-xs shadow-lg shadow-astral-cyan/20 hover:opacity-90 transition flex items-center gap-1.5"
-              >
-                <span>✦</span>
-                <span>Fijar Ubicación</span>
-              </button>
-            </div>
+          {/* Botones de acción principales */}
+          <div className="flex items-center gap-2 pt-0.5">
+            <button
+              type="button"
+              onClick={onClose}
+              className="w-1/3 py-2.5 rounded-xl bg-surface-200 hover:bg-surface-300 text-slate-300 text-xs sm:text-sm font-medium transition text-center cursor-pointer"
+            >
+              Cancelar
+            </button>
+            <button
+              type="button"
+              onClick={handleConfirm}
+              className="w-2/3 py-2.5 rounded-xl bg-gradient-to-r from-astral-cyan via-astral-azure to-astral-sapphire text-slate-950 font-serif font-bold text-xs sm:text-sm shadow-xl shadow-astral-cyan/20 hover:opacity-90 active:scale-[0.98] transition flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <span>✦</span>
+              <span>Fijar Ubicación ({city || 'Punto'})</span>
+            </button>
           </div>
         </div>
       </div>
